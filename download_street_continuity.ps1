@@ -3,7 +3,9 @@
 $TempFolder = New-Item -ItemType Directory -Path "$env:TEMP\StreetContinuity" -Force
 
 # Download Street StreetContinuity.zip from GitHub (https://github.com/gabrielspadon/StreetContinuity/archive/refs/heads/master.zip)
-Invoke-WebRequest -Uri "https://github.com/gabrielspadon/StreetContinuity/archive/refs/heads/master.zip" -OutFile "$env:TEMP\StreetContinuity\StreetContinuity.zip"
+# Update 19.11.2023 Mit dem aktuellen Stand von StreetContinuity lässt sich wegen Inkompatiblität der Bibliotheken nicht arbeiten. Daher
+# habe ich einen Pull Request mit aktualisierten Bibliotheken und gefixten Code erstellt. Stattdessen wird dieser heruntergeladen.
+Invoke-WebRequest -Uri "https://github.com/theodm/StreetContinuity/archive/refs/heads/feature/Update_To_Newer_Libary_Versions.zip" -OutFile "$env:TEMP\StreetContinuity\StreetContinuity.zip"
 
 # Extract StreetContinuity.zip to Temp Folder
 Expand-Archive -Path "$env:TEMP\StreetContinuity\StreetContinuity.zip" -DestinationPath "$env:TEMP\StreetContinuity"
