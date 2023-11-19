@@ -28,3 +28,4 @@
 /libs/streetcontinuity/setup.py
 /src/data/file.graphml
 /src/data/supplementary.txt
+/src/server/cache/
