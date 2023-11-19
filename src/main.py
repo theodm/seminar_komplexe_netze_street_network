@@ -12,7 +12,7 @@ memory = Memory("cachedir", verbose=0)
 def cached_graph_from_place(place, network_type):
     return ox.graph_from_place(place, network_type=network_type)
 
-G = cached_graph_from_place("Wiesbaden, Germany", network_type="drive")
+G = cached_graph_from_place("Frauenstein, Germany", network_type="drive")
 
 # @memory.cache
 # def cached_graph_from_bbox(north, south, east, west, network_type):
