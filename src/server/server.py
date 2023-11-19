@@ -61,6 +61,9 @@ def graph():
             else:
                 obj[key] = value
 
+        obj["source"] = node_view_to_node_json(edge_id[0], oxg.nodes[edge_id[0]], True)
+        obj["target"] = node_view_to_node_json(edge_id[1], oxg.nodes[edge_id[1]], True)
+
         edges[str_edge_id] = obj
 
     return {

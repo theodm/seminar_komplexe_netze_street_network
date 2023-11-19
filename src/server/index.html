@@ -131,25 +131,24 @@
                 for (var eid in edges) {
                     var edge = edges[eid];
 
+                    geometry = edge.geometry;
                     // if edge has no geometry, skip
-                    if (!edge.geometry) {
-                        console.log("edge " + eid + " has no geometry (" + JSON.stringify(edge) + ")")
-                        continue;
+                    if (!geometry) {
+                        console.log("edge " + eid + " has no geometry (edge: " + JSON.stringify(edge) + ")");
+                        geometry = [[edge.source.lon, edge.source.lat], [edge.target.lon, edge.target.lat]];
                     }
 
                     const points = [];
-                    for (const point of edge.geometry) {
+                    for (const point of geometry) {
                         points.push(ol.proj.fromLonLat(point));
                     }
 
+                    console.log("points", points);
+
                     var feature = new ol.Feature({
-                        geometry: new ol.geom.LineString(points),
+                        "geometry": new ol.geom.LineString(points),
                         props: edge
                     });
-
-                    console.log(feature)
-                    console.log(edge.geometry[0])
-                    console.log(edge.geometry[edge.geometry.length - 1])
 
                     vectorSource.addFeature(feature);
                 }
