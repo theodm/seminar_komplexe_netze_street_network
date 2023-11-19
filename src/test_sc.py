@@ -4,123 +4,128 @@ from street_continuity.all import *
 
 
 memory = Memory("cachedir", verbose=0)
-# @memory.cache
-# def cached_graph_from_place(place, network_type):
-#     return ox.graph_from_place(place, network_type=network_type)
-# # load the primal graph from osmnx
-# oxg = cached_graph_from_place("Darmstadt, Germany", network_type="drive")
-
 
 @memory.cache
-def cached_graph_from_bbox(north, south, east, west, network_type):
-    return ox.graph_from_bbox(north, south, east, west, network_type=network_type)
+def cached_graph_from_place(place, network_type):
+    return ox.graph_from_place(place, network_type=network_type)
+# load the primal graph from osmnx
+oxg = cached_graph_from_place("Darmstadt, Germany", network_type="drive")
 
-oxg = cached_graph_from_bbox(50.2977, 49.8367, 8.9628, 8.0516, network_type="drive")
 
-print(-1)
-
-p_graph = from_osmnx(oxg=oxg, use_label=True)
-
-print(0)
-
-# alternatively, you can load the graph from a csv file
-# p_graph = read_csv(nodes_filename='test-nodes.csv', edges_filename='test-edges.csv', directory='data', use_label=True, has_header=False)
-
-# maps the primal graph to the dual representation
-# use_label = True: uses HICN algorithm
-# use_label = False: uses ICN algorithm
-d_graph = dual_mapper(primal_graph=p_graph, min_angle=170)
-
+# @memory.cache
+# def cached_graph_from_bbox(north, south, east, west, network_type):
+#     return ox.graph_from_bbox(north, south, east, west, network_type=network_type)
 #
-# def convert_dual_graph_to_networkx(d_graph: DualGraph):
-#     d_graph.build_graph()
-
-newg = nx.Graph()
-# iterate values of node_dictionary
-for _, node in d_graph.node_dictionary.items():
-    newg.add_node(node.did, original_edges=node.edges, names=node.names)
-
-for _, edge in d_graph.edge_dictionary.items():
-    newg.add_edge(edge[0], edge[1])
-print(1)
-# use greedy coloring to color the nodes
-colors = nx.greedy_color(newg, strategy="largest_first")
-max_color = max(colors.values()) + 1
-print(2)
+# oxg = cached_graph_from_bbox(50.2977, 49.8367, 8.9628, 8.0516, network_type="drive")
 
 
+def dual_graph_to_nxgraph(d_graph: DualGraph):
+    nxgraph = nx.Graph()
 
+    for _, node in d_graph.node_dictionary.items():
+        nxgraph.add_node(node.did, original_edges=node.edges, names=node.names)
 
-# select nodes with degree > 50
-# nodes_d = [n for n, d in newg.degree() if d > 50]
-#
-# for node in nodes_d:
-#     print(node)
-#     print(newg.nodes[node]["names"])
+    for _, edge in d_graph.edge_dictionary.items():
+        nxgraph.add_edge(edge[0], edge[1])
 
+    return nxgraph
 
-# # Es werden nicht alle Kanten von edge_betweenness_centrality zurückgegeben,
-# # wir suchen die fehlenden Kanten und fügen sie mit dem Wert 0 hinzu
-# for edge in p_graph.edges:
-#
+def plot_with_degree(oxg: nx.MultiDiGraph, min_angle: int = 90, min_degree: int = 0):
+    # Calculate primal graph
+    p_graph = from_osmnx(oxg=oxg, use_label=True)
 
-# select nodes with degree > 50
-nodes_d = [n for n, d in newg.degree() if d >= 0]
+    # Calculate dual graph
+    d_graph = dual_mapper(primal_graph=p_graph, min_angle=min_angle)
 
-nodes_to_degree = newg.degree()
+    # Convert dual graph to networkx
+    nxgraph = dual_graph_to_nxgraph(d_graph)
 
-for e in oxg.edges:
-    oxg.edges[e]["show_factor"] = 0
-    oxg.edges[e]["degree"] = 0
+    # Calculate degree of nodes in dual graph (Anzahl Kreuzungen des Straßenzuges)
+    nodes_to_degree = nxgraph.degree()
 
-colormap = ox.plot.get_colors(n=max_color, cmap="Paired", alpha=1.0, return_hex=True)
+    # Nun setzen wir im originalen Graphen
+    # in den Kanten die Anzahl der Kreuzungen (Knotengrad im dualen Graph)
+    # dann können wir die Kanten entsprechend kolorieren
 
-ec = []
+    # default value for all edges
+    for edge in oxg.edges:
+        oxg.edges[edge]["degree"] = 0
 
-print(3)
+    selected_nodes = [n for n, d in nxgraph.degree() if d >= min_degree]
+    
+    # Für alle Straßenzüge (die im dualen Graphen als Knoten gespeichert sind)
+    for n in selected_nodes:
+        # Für jede Kante des Straßenzuges im originalen Graphen
+        for e in nxgraph.nodes[n]["original_edges"]:
+            
+            # Workaround: Im originalen Graphen kann es Mehrfachverbindungen geben.
+            # wir geben allen Kanten die entsprechenden Eigenschaften.
+            for i in range(100):
+                if oxg.has_edge(e[0], e[1], i):
+                    edge = oxg.edges[e[0], e[1], i]
+                    edge["degree"] = nodes_to_degree[n]
 
-for n in nodes_d:
-    print(n)
-    print(newg.nodes[n]["names"])
+                if oxg.has_edge(e[1], e[0], i):
+                    edge = oxg.edges[e[1], e[0], i]
+                    edge["degree"] = nodes_to_degree[n]
+    
+    # Nun können wir die Kanten entsprechend kolorieren
+    ec = ox.plot.get_edge_colors_by_attr(oxg, "degree", cmap="inferno")
 
-    n_color = colors[n]
+    # und anzeigen
+    fig, ax = ox.plot_graph(
+        oxg, edge_color=ec, edge_linewidth=2, node_size=0, dpi=5000, figsize=(30, 30))
 
-    for e in newg.nodes[n]["original_edges"]:
-        print(e)
-        for i in range(10):
-            if oxg.has_edge(e[0], e[1], i):
-                edge = oxg.edges[e[0], e[1], i]
-                print(edge)
+def plot_with_colors(oxg: nx.MultiDiGraph, min_angle: int = 90, min_degree: int = 0):
+    # Calculate primal graph
+    p_graph = from_osmnx(oxg=oxg, use_label=True)
 
-                edge["show_factor"] = 1
-                edge["degree"] = nodes_to_degree[n]
-                edge["color"] = colormap[n_color]
+    # Calculate dual graph
+    d_graph = dual_mapper(primal_graph=p_graph, min_angle=90)
 
-            if oxg.has_edge(e[1], e[0], i):
-                edge = oxg.edges[e[1], e[0], i]
-                print(edge)
+    # Convert dual graph to networkx
+    nxgraph = dual_graph_to_nxgraph(d_graph)
 
-                edge["show_factor"] = 1
-                edge["degree"] = nodes_to_degree[n]
-                edge["color"] = colormap[n_color]
+    # use greedy coloring to color the nodes
+    colors = nx.greedy_color(nxgraph, strategy="largest_first")
+    max_color = max(colors.values()) + 1
 
-# for edge in oxg.edges:
-#     if oxg.edges[edge]["show_factor"] == 0:
-#         oxg.edges[edge]["color"] = "#ffffff"
-#
-#     ec.append(oxg.edges[edge]["color"])
+    # ToDo: Das sollten wirklich unterschiedliche Farben sein, eine ColorMap geht nicht,
+    # da ähnliche Werte auch gleiche Farben hervorbringen
+    colormap = ox.plot.get_colors(n=max_color, cmap="Paired", alpha=1.0, return_hex=True)
 
+    selected_nodes = [n for n, d in nxgraph.degree() if d >= min_degree]
 
-print(4)
+    # Für alle Straßenzüge (die im dualen Graphen als Knoten gespeichert sind)
+    for n in selected_nodes:
+        # Eine Farbe für jeden Straßenzug
+        color_num = colors[n]
 
-ec = ox.plot.get_edge_colors_by_attr(oxg, "degree", cmap="inferno")
+        # Für jede Kante des Straßenzuges im originalen Graphen
+        for e in nxgraph.nodes[n]["original_edges"]:
 
-fig, ax = ox.plot_graph(
-    oxg, edge_color=ec, edge_linewidth=2, node_size=0, dpi=5000, figsize=(30, 30))
+            # Workaround: Im originalen Graphen kann es Mehrfachverbindungen geben.
+            # wir geben allen Kanten die entsprechenden Eigenschaften.
+            for i in range(100):
+                if oxg.has_edge(e[0], e[1], i):
+                    edge = oxg.edges[e[0], e[1], i]
+                    edge["color"] = colormap[color_num]
 
+                if oxg.has_edge(e[1], e[0], i):
+                    edge = oxg.edges[e[1], e[0], i]
+                    edge["color"] = colormap[color_num]
 
+    # Nun können wir die Kanten entsprechend kolorieren
+    ec = []
 
+    for edge in oxg.edges:
+        if not "color" in oxg.edges[edge]:
+            oxg.edges[edge]["color"] = "#ffffff"
 
-# you must create the data directory before running this command
-#dxg = write_graphml(graph=d_graph, filename='file.graphml', directory='data')
-#write_supplementary(graph=d_graph, filename='supplementary.txt', directory='data')
+        ec.append(oxg.edges[edge]["color"])
+
+    # und anzeigen
+    fig, ax = ox.plot_graph(
+        oxg, edge_color=ec, edge_linewidth=2, node_size=0, dpi=5000, figsize=(30, 30))
+
+plot_with_degree(oxg)
