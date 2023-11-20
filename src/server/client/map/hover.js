@@ -11,7 +11,7 @@
 export function registerFeatureHover(map, onHover, onHoverEnter, onHoverLeave) {
     let currentFeature = undefined;
 
-    map.on('pointermove', function (evt) {
+    let pointerMoveCallback = (evt) => {
         if (evt.dragging) {
             return;
         }
@@ -36,15 +36,19 @@ export function registerFeatureHover(map, onHover, onHoverEnter, onHoverLeave) {
             onHoverLeave(evt, currentFeature);
             currentFeature = undefined;
         }
-    });
+    };
+    map.on('pointermove', pointerMoveCallback);
 
-    map.getTargetElement().addEventListener('pointerleave', function (evt) {
+    let pointerLeaveCallback = (evt) => {
         onHoverLeave(evt, currentFeature);
         currentFeature = undefined;
-    });
+    };
+    map.getTargetElement().addEventListener('pointerleave', pointerLeaveCallback);
+
+    return [pointerMoveCallback, pointerLeaveCallback];
 }
 
-// function removeHoverOverFeatures() {
-//     map.un('pointermove');
-//     map.getTargetElement().removeEventListener('pointerleave');
-// }
+export function removeHoverOverFeatures(map, removeArray) {
+    map.un('pointermove', removeArray[0]);
+    map.getTargetElement().removeEventListener('pointerleave', removeArray[1]);
+}

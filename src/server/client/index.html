@@ -10,13 +10,13 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- Bibliothek zum einfachen Speichern / Laden von Cookies -->
     <script src=" https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js "></script>
-    
+
     <!-- Notwendige Stylesheets für openlayers (Bibliothek zum Darstellen der OSM-Maps)-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
-    
+
     <!-- Unsere JavaScript-Einstiegsdatei -->
     <script src="index.js" type="module"></script>
-    
+
     <!-- Inline CSS -->
     <style type="text/css">
         /* flex box layout; left should be remaining size right as big as needed */
@@ -45,6 +45,9 @@
             transform: translateX(3%);
             visibility: hidden;
             pointer-events: none;
+
+            font-family: "Lucida Console", Monaco, monospace;
+            font-size: 9pt;
         }
 
         #info p {
@@ -74,44 +77,59 @@
         .settings-box input {
             margin-top: 2px;
         }
+
+        .settings-checkbox {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .settings-checkbox label {
+            margin-top: 0;
+        }
     </style>
 </head>
 
 <body>
-    <div id="map-and-settings">
-        <div id="map" class="map">
+<div id="map-and-settings">
+    <div id="map" class="map">
 
-            <div id="info">
-            </div>
+        <div id="info">
         </div>
-        <div id="settings">
-            <h1>Settings</h1>
-            <div id="settings-coordinates" class="settings-box">
-                <label for="lat">Latitude</label>
-                <input type="text" name="lat" id="lat" value="" disabled>
-                <label for="lon">Longitude</label>
-                <input type="text" name="lon" id="lon" value="" disabled>
-            </div>
-            <div id="settings-coordinates-bbox" class="settings-box">
-                <label for="lat">North</label>
-                <input type="text" name="north" id="north" value="" disabled>
-                <label for="lon">East</label>
-                <input type="text" name="east" id="east" value="" disabled>
-                <label for="lat">South</label>
-                <input type="text" name="south" id="south" value="" disabled>
-                <label for="lon">West</label>
-                <input type="text" name="west" id="west" value="" disabled>
-            </div>
-            <div id="settings-geosearch" class="settings-box">
-                <label for="geosearch">Search</label>
-                <input type="text" name="geosearch" id="geosearch" value="">
-                <input type="button" name="geosearch-button" id="geosearch-button" value="Search">
-            </div>
-            <div id="settings-buttons" class="settings-box">
-                <input type="button" name="load-graph-button" id="load-graph-button" value="Load Graph for BBox">
-                <input type="button" name="load-graph-button" id="clear-cookies-button" value="Clear Cookies">
-            </div>
+    </div>
+    <div id="settings">
+        <h1>Settings</h1>
+        <div id="settings-coordinates" class="settings-box">
+            <label for="lat">Latitude</label>
+            <input type="text" name="lat" id="lat" value="" disabled>
+            <label for="lon">Longitude</label>
+            <input type="text" name="lon" id="lon" value="" disabled>
         </div>
+        <div id="settings-coordinates-bbox" class="settings-box">
+            <label for="lat">North</label>
+            <input type="text" name="north" id="north" value="" disabled>
+            <label for="lon">East</label>
+            <input type="text" name="east" id="east" value="" disabled>
+            <label for="lat">South</label>
+            <input type="text" name="south" id="south" value="" disabled>
+            <label for="lon">West</label>
+            <input type="text" name="west" id="west" value="" disabled>
+        </div>
+        <div id="settings-geosearch" class="settings-box">
+            <label for="geosearch">Search</label>
+            <input type="text" name="geosearch" id="geosearch" value="">
+            <input type="button" name="geosearch-button" id="geosearch-button" value="Search">
+        </div>
+        <div id="settings-buttons" class="settings-box">
+            <!-- checkbox to enable/disable fixed position of tooltip -->
+            <div class="settings-checkbox">
+                <label for="fixed-tooltip">Fixed Tooltip</label>
+                <input type="checkbox" name="fixed-tooltip" id="fixed-tooltip" value="fixed-position">
+            </div>
+            <input type="button" name="load-graph-button" id="load-graph-button" value="Load Graph for BBox">
+            <input type="button" name="load-graph-button" id="clear-cookies-button" value="Clear Cookies">
+        </div>
+    </div>
 
 </body>
 

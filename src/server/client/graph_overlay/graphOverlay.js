@@ -73,6 +73,9 @@ export function createGraphOverlay(
         source: vectorSource
     }));
 
+    // get last added layer (vector layer)
+    const vectorLayer = map.getLayers().getArray().slice(-1)[0];
+
     // var select = new ol.interaction.Select({
     //     layers: [vectorLayer]
     // });
@@ -94,7 +97,10 @@ export function createGraphOverlay(
     //     alert('You clicked on ' + lonLat[0] + ', ' + lonLat[1] + ' with props ' + JSON.stringify(props));
     // });
 
-    createHoverLogicForGraphOverlay(map, graph, nodes2feature, edges2feature);
+    const removeHoverLogicFn = createHoverLogicForGraphOverlay(map, graph, nodes2feature, edges2feature);
 
-
+    return () => {
+        removeHoverLogicFn();
+        map.removeLayer(vectorLayer);
+    }
 }

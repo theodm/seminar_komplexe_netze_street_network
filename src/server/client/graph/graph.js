@@ -74,7 +74,8 @@ export function isNode(obj) {
  * der Typ source / target / both zurückgegeben, je nachdem
  * ob die Kante in den Knoten hinein oder hinausgeht oder
  * in beide Richtungen geht.
- * 
+ *
+ * @param {Graph} graph
  * @param {number} nodeId 
  * @returns 
  */
@@ -86,21 +87,22 @@ export function findEdgeIdsForNodeWithType(graph, nodeId) {
 
     for (const eid in edges) {
         var edge = edges[eid];
-
-        if (edge.source.id == nodeId) {
-            if (result[eid] === undefined) {
-                result[eid] = "source";
-            } else if (result[eid] === "target") {
+        if (edge.source.id === nodeId) {
+            // Ausgehende Kante
+            result[eid] = "source";
+            if (!edge.oneway) {
                 result[eid] = "both";
             }
-        } else if (edge.target.id == nodeId) {
-            if (result[eid] === undefined) {
-                result[eid] = "target";
-            } else if (result[eid] === "source") {
+
+        } else if (edge.target.id === nodeId) {
+            // Eingehende Kante
+            result[eid] = "target";
+            if (!edge.oneway) {
                 result[eid] = "both";
             }
         }
     }
+
 
     return result;
 }

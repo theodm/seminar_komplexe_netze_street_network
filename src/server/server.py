@@ -26,7 +26,6 @@ def graph():
     south = request.query.south
     west = request.query.west
 
-    # calculate graph with osmnx
     oxg = ox.graph_from_bbox(north, south, east, west, network_type='drive')
 
     nodes = {}

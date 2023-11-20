@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var center = getCookieOrDefault('last_saved_center_position', "[8.239761, 50.078218]");
     var zoom = getCookieOrDefault('last_saved_zoom_level', 12);
 
+    // Die Checkbox, die angibt ob der Tooltip fixiert werden soll oder nicht.
+    const fixedTooltip = getCookieOrDefault('fixed_tooltip', false);
+    document.getElementById('fixed-tooltip').checked = fixedTooltip;
+
+    document.getElementById('fixed-tooltip').addEventListener('change', function () {
+        Cookies.set('fixed_tooltip', this.checked);
+    });
+
     var map = new ol.Map({
         target: 'map',
         layers: [
@@ -62,6 +70,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
+    let removeGraphOverlayFn = undefined
+
     // on graph load, request to server /graph
     // with bbox as query parameter (keys: north, east, ...) in axios returns
     // json object with object nodes and edges
@@ -72,7 +82,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         axios.get(url)
             .then(function (response) {
-                createGraphOverlay(map, response.data);
+                if (removeGraphOverlayFn) {
+                    console.log('remove graph overlay')
+                    // remove old graph overlay
+                    removeGraphOverlayFn();
+                }
+
+                removeGraphOverlayFn = createGraphOverlay(map, response.data);
             })
             .catch(function (error) {
                 console.log(error);

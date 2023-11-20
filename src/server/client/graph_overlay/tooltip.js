@@ -1,4 +1,5 @@
-import { isNode } from "../graph/graph";
+import { isNode } from "../graph/graph.js";
+import { colorsForNeighbourNodes } from "./styles.js";
 
 /**
  * Beim Hovern über Knoten und Kanten soll ein Tooltip 
@@ -11,6 +12,13 @@ export function getContentsOfTooltip(feature) {
         // feature is node
         const { id, lat, lon, neighbors, ...otherProps } = feature.get('props');
 
+        // create html for neighbors with color
+        const neighborHtml = neighbors.map((neighbor, i) =>
+            `<span style="color: ${colorsForNeighbourNodes(i)}">
+                ${neighbor.id}
+            </span>`
+        ).join('');
+
         return `
             <div>
                 <p>type: node</p>
@@ -21,7 +29,7 @@ export function getContentsOfTooltip(feature) {
                 ${Object.entries(otherProps)
                     .map(([key, value]) => `<p>${key}: ${value}</p>`)
                     .join('')}
-                <p>neighbors: [${neighbors.map(neighbor => neighbor.id).join(', ')}]</p>
+                <p>neighbours: ${neighborHtml}</p>
             </div>
         `;
     }
