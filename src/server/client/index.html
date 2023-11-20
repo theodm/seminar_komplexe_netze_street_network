@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- Bibliothek zum Darstellen der OSM-Maps. Bietet zahlreiche weitere Features zur Interaktion mit den Karten. -->
+    <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+    <!-- Bibliothek für HTTP-Requests -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Bibliothek zum einfachen Speichern / Laden von Cookies -->
+    <script src=" https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js "></script>
+    
+    <!-- Notwendige Stylesheets für openlayers (Bibliothek zum Darstellen der OSM-Maps)-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
+    
+    <!-- Unsere JavaScript-Einstiegsdatei -->
+    <script src="index.js" type="module"></script>
+    
+    <!-- Inline CSS -->
+    <style type="text/css">
+        /* flex box layout; left should be remaining size right as big as needed */
+        #map-and-settings {
+            display: flex;
+            flex-direction: row;
+
+            height: 98vh;
+        }
+
+        #map {
+            flex: 1;
+        }
+
+        #info {
+            position: absolute;
+            display: inline-block;
+            height: auto;
+            width: auto;
+            z-index: 100;
+            background-color: #333;
+            color: #fff;
+            border-radius: 4px;
+            padding: 5px;
+            left: 50%;
+            transform: translateX(3%);
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        #info p {
+            margin: 0;
+            padding: 0;
+        }
+
+        #settings {
+            padding: 10px;
+        }
+
+        #settings h1 {
+            text-align: center;
+        }
+
+        .settings-box {
+            display: flex;
+            flex-direction: column;
+
+            padding: 5px;
+        }
+
+        .settings-box label {
+            margin-top: 5px;
+        }
+
+        .settings-box input {
+            margin-top: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map-and-settings">
+        <div id="map" class="map">
+
+            <div id="info">
+            </div>
+        </div>
+        <div id="settings">
+            <h1>Settings</h1>
+            <div id="settings-coordinates" class="settings-box">
+                <label for="lat">Latitude</label>
+                <input type="text" name="lat" id="lat" value="" disabled>
+                <label for="lon">Longitude</label>
+                <input type="text" name="lon" id="lon" value="" disabled>
+            </div>
+            <div id="settings-coordinates-bbox" class="settings-box">
+                <label for="lat">North</label>
+                <input type="text" name="north" id="north" value="" disabled>
+                <label for="lon">East</label>
+                <input type="text" name="east" id="east" value="" disabled>
+                <label for="lat">South</label>
+                <input type="text" name="south" id="south" value="" disabled>
+                <label for="lon">West</label>
+                <input type="text" name="west" id="west" value="" disabled>
+            </div>
+            <div id="settings-geosearch" class="settings-box">
+                <label for="geosearch">Search</label>
+                <input type="text" name="geosearch" id="geosearch" value="">
+                <input type="button" name="geosearch-button" id="geosearch-button" value="Search">
+            </div>
+            <div id="settings-buttons" class="settings-box">
+                <input type="button" name="load-graph-button" id="load-graph-button" value="Load Graph for BBox">
+                <input type="button" name="load-graph-button" id="clear-cookies-button" value="Clear Cookies">
+            </div>
+        </div>
+
+</body>
+
+</html>

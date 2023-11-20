@@ -2,15 +2,24 @@ from bottle import Bottle, run, request, response, static_file, route, get
 import osmnx as ox
 from networkx.classes.reportviews import NodeView
 
+# Mit diesen Anweisungen werden alle Dateien im Ordner ./client
+# unter der URL /** zur Verfügung gestellt. index.html wird zusätzlich
+# unter dem Root-Pfad / bereitgestellt.
 
 @route('/')
 def server_static():
-    return static_file('index.html', root='.')
+    return static_file('index.html', root='./client')
+    
+@route('/<filepath:path>')
+def server_static(filepath):
+    return static_file(filepath, root='./client')
 
-# get route /graph with query parameter north, east, south...
+
+
+# get route /api/graph with query parameter north, east, south...
 # which returns a json structure with properties nodes and edges
 # calculates route with osmnx and returns nodes and edges
-@get('/graph')
+@get('/api/graph')
 def graph():
     north = request.query.north
     east = request.query.east
@@ -61,6 +70,7 @@ def graph():
             else:
                 obj[key] = value
 
+        obj["id"] = str_edge_id
         obj["source"] = node_view_to_node_json(edge_id[0], oxg.nodes[edge_id[0]], True)
         obj["target"] = node_view_to_node_json(edge_id[1], oxg.nodes[edge_id[1]], True)
 
@@ -74,4 +84,3 @@ def graph():
 
 
 run(host='localhost', port=8080, debug=True)
-
