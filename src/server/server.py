@@ -2,6 +2,9 @@ from bottle import Bottle, run, request, response, static_file, route, get
 import osmnx as ox
 from networkx.classes.reportviews import NodeView
 
+from src.server.graph.mdig_to_graph import mdig_to_graph
+
+
 # Mit diesen Anweisungen werden alle Dateien im Ordner ./client
 # unter der URL /** zur Verfügung gestellt. index.html wird zusätzlich
 # unter dem Root-Pfad / bereitgestellt.
@@ -27,6 +30,15 @@ def graph():
     west = request.query.west
 
     oxg = ox.graph_from_bbox(north, south, east, west, network_type='drive')
+
+    # request type can be Graph or MultiDiGraph
+    graph_type = request.query.type
+    if graph_type == "Graph":
+        oxg = mdig_to_graph(oxg)
+    elif graph_type == "MultiDiGraph":
+        pass
+    else:
+        raise Exception("Invalid request type")
 
     nodes = {}
 
@@ -58,7 +70,10 @@ def graph():
     for edge_id in oxg.edges:
         oxedge = oxg.edges[edge_id]
 
-        str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "," + str(edge_id[2]) + "]"
+        if graph_type == "Graph":
+            str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "]"
+        elif graph_type == "MultiDiGraph":
+            str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "," + str(edge_id[2]) + "]"
 
         obj = {}
 
@@ -75,9 +90,27 @@ def graph():
 
         edges[str_edge_id] = obj
 
+    # calculate num_nodes, num_edges, max_degree, avg_degree, min_degree
+    num_nodes = oxg.number_of_nodes()
+    num_edges = oxg.number_of_edges()
+
+    degrees = oxg.degree()
+
+    max_degree = max(dict(degrees).values())
+    avg_degree = sum(dict(degrees).values()) / num_nodes
+    min_degree = min(dict(degrees).values())
+
     return {
+        "graphType": graph_type,
         "nodes": nodes,
-        "edges": edges
+        "edges": edges,
+        "graphInfo": {
+            "numNodes": num_nodes,
+            "numEdges": num_edges,
+            "maxDegree": max_degree,
+            "avgDegree": avg_degree,
+            "minDegree": min_degree
+        }
     }
 
 

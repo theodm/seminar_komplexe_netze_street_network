@@ -78,7 +78,16 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('load-graph-button').addEventListener('click', function () {
         var extent = getExtent();
 
-        var url = '/api/graph?north=' + extent[0] + '&east=' + extent[1] + '&south=' + extent[2] + '&west=' + extent[3];
+        // <select id="graph-type" name="graph-type">
+        //                 <option value="MultiDiGraph">default (MultiDiGraph)</option>
+        //                 <option value="Graph">simple (Graph)</option>
+        //             </select>
+        // get graphType from select element
+        const graphType = document.getElementById('graph-type').value;
+
+        console.log('graphType: ' + graphType)
+
+        var url = '/api/graph?north=' + extent[0] + '&east=' + extent[1] + '&south=' + extent[2] + '&west=' + extent[3] + '&type=' + graphType;
 
         axios.get(url)
             .then(function (response) {
@@ -88,7 +97,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     removeGraphOverlayFn();
                 }
 
-                removeGraphOverlayFn = createGraphOverlay(map, response.data);
+                const graph = response.data;
+
+                const localNumberOfNodes = Object.keys(graph.nodes).length;
+                const localNumberOfEdges = Object.keys(graph.edges).length;
+
+                document.getElementById('num_nodes').innerHTML = graph.graphInfo.numNodes + " (" + localNumberOfNodes + ")";
+                document.getElementById('num_edges').innerHTML = graph.graphInfo.numEdges + " (" + localNumberOfEdges + ")";
+                document.getElementById('max_degree').innerHTML = graph.graphInfo.maxDegree;
+                document.getElementById('avg_degree').innerHTML = graph.graphInfo.avgDegree;
+                document.getElementById('min_degree').innerHTML = graph.graphInfo.minDegree;
+
+                removeGraphOverlayFn = createGraphOverlay(map, graph);
             })
             .catch(function (error) {
                 console.log(error);

@@ -1,12 +1,22 @@
 
 /**
  * GraphResponse is of type
- * 
+ *
+ *
  * interface Graph {
  *     // nid = node id
  *     nodes: { [nid: number]: Node };
  *     // eid = [sourceId,targetId,index]
  *     edges: { [eid: string]: Edge }};
+ *     // graphType= "MultiDiGraph" | "Graph"
+ *     graphType: "MultiDiGraph" | "Graph";
+ *     graphInfo: {
+     *     numNodes: number;
+     *     numEdges: number;
+     *     maxDegree: number;
+     *     avgDegree: number;
+     *     minDegree: number;
+ *     };
  * }
  * 
  * interface Node {
@@ -88,6 +98,11 @@ export function findEdgeIdsForNodeWithType(graph, nodeId) {
     for (const eid in edges) {
         var edge = edges[eid];
         if (edge.source.id === nodeId) {
+            if (graph.graphType === "Graph") {
+                // Bei einem einfachen Graphen (Graph) ist die Richtung egal
+                result[eid] = "both";
+                continue;
+            }
             // Ausgehende Kante
             result[eid] = "source";
             if (!edge.oneway) {
@@ -95,6 +110,12 @@ export function findEdgeIdsForNodeWithType(graph, nodeId) {
             }
 
         } else if (edge.target.id === nodeId) {
+            if (graph.graphType === "Graph") {
+                // Bei einem einfachen Graphen (Graph) ist die Richtung egal
+                result[eid] = "both";
+                continue;
+            }
+
             // Eingehende Kante
             result[eid] = "target";
             if (!edge.oneway) {

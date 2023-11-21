@@ -85,7 +85,6 @@ export function createHoverLogicForGraphOverlay(
                     hoveredNodes.push(neighborId);
                 }
 
-
                 // Highlight Edges
                 const edgesToColor = findEdgeIdsForNodeWithType(graph, nodeId);
 

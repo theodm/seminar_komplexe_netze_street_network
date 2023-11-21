@@ -87,6 +87,20 @@
         .settings-checkbox label {
             margin-top: 0;
         }
+
+        #graph-info-table {
+            width: 100%;
+        }
+
+        #graph-info-table td {
+            padding: 2px;
+        }
+
+        #graph-info-box {
+            overflow-y: scroll;
+            max-height: 200px;
+        }
+
     </style>
 </head>
 
@@ -120,12 +134,41 @@
             <input type="text" name="geosearch" id="geosearch" value="">
             <input type="button" name="geosearch-button" id="geosearch-button" value="Search">
         </div>
+        <div id="graph-info-box" class="settings-box">
+            <!-- Key / Value -->
+            <table id="graph-info-table">
+                <tr>
+                    <td>num nodes</td>
+                    <td id="num_nodes"></td>
+                </tr>
+                <tr>
+                    <td>num edges</td>
+                    <td id="num_edges"></td>
+                </tr>
+                <tr>
+                    <td>max degree</td>
+                    <td id="max_degree"></td>
+                </tr>
+                <tr>
+                    <td>avg degree</td>
+                    <td id="avg_degree"></td>
+                </tr>
+                <tr>
+                    <td>min degree</td>
+                    <td id="min_degree"></td>
+                </tr>
+            </table>
+        </div>
         <div id="settings-buttons" class="settings-box">
             <!-- checkbox to enable/disable fixed position of tooltip -->
             <div class="settings-checkbox">
                 <label for="fixed-tooltip">Fixed Tooltip</label>
                 <input type="checkbox" name="fixed-tooltip" id="fixed-tooltip" value="fixed-position">
             </div>
+            <select id="graph-type" name="graph-type">
+                <option value="MultiDiGraph">default (MultiDiGraph)</option>
+                <option value="Graph">simple (Graph)</option>
+            </select>
             <input type="button" name="load-graph-button" id="load-graph-button" value="Load Graph for BBox">
             <input type="button" name="load-graph-button" id="clear-cookies-button" value="Clear Cookies">
         </div>
