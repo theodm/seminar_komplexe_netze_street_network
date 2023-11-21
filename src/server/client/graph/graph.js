@@ -2,7 +2,6 @@
 /**
  * GraphResponse is of type
  *
- *
  * interface Graph {
  *     // nid = node id
  *     nodes: { [nid: number]: Node };
@@ -11,11 +10,11 @@
  *     // graphType= "MultiDiGraph" | "Graph"
  *     graphType: "MultiDiGraph" | "Graph";
  *     graphInfo: {
-     *     numNodes: number;
-     *     numEdges: number;
-     *     maxDegree: number;
-     *     avgDegree: number;
-     *     minDegree: number;
+ *         numNodes: number;
+ *         numEdges: number;
+ *         maxDegree: number;
+ *         avgDegree: number;
+ *         minDegree: number;
  *     };
  * }
  * 

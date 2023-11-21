@@ -1,13 +1,22 @@
 import {createNodeStyleNormal} from './styles.js';
 import {createEdgeStyleNormal} from './styles.js';
-import { edgeGetGeometry } from '../graph/graph.js';
-import { createHoverLogicForGraphOverlay } from './hoverLogic.js';
+import {edgeGetGeometry, isNode} from '../graph/graph.js';
+import {createHoverLogicForGraphOverlay} from './hoverLogic.js';
+
+
+class WebGLLayer extends ol.layer.Layer {
+    createRenderer() {
+        return new ol.renderer.webgl.VectorLayer(this, {
+            style
+        });
+    }
+}
 
 /**
  * Erstellt einen Overlay für openlayers, welches die Knoten und Kanten
  * des osmnx-Graphen anzeigt. openlayers arbeitet mit sogenannten Layern.
- * 
- * @param {Graph} graph 
+ *
+ * @param {Graph} graph
  */
 export function createGraphOverlay(
     map,
@@ -16,9 +25,13 @@ export function createGraphOverlay(
     const nodes = graph.nodes;
     const edges = graph.edges;
 
-    var vectorSource = new ol.source.Vector({
+    // use WebGLVectorLayerRenderer for better performance
+    // https://openlayers.org/en/latest/examples/webgl-layer.html
+
+    const vectorSource = new ol.source.Vector({
         features: []
     });
+
 
     // Ein Feature in openlayers ist ein Objekt, welches auf der Karte angezeigt wird
     // (z.B. ein Punkt, eine Linie, ein Polygon, ein Kreis, ein Text, ...)
@@ -34,11 +47,9 @@ export function createGraphOverlay(
 
         var feature = new ol.Feature({
             geometry: new ol.geom.Point(ol.proj.fromLonLat([node.lon, node.lat])),
+            type: "node",
             props: node
         });
-
-        // Initiales Aussehen des Punktes setzen
-        feature.setStyle(createNodeStyleNormal());
 
         vectorSource.addFeature(feature);
         nodes2feature[node.id] = feature;
@@ -59,19 +70,83 @@ export function createGraphOverlay(
         // da osmnx ZwischenKnoten filtert, aber den Straßenverlauf erhält.
         var feature = new ol.Feature({
             "geometry": new ol.geom.LineString(pointsToConnect),
+            "type": "edge",
             props: edge
         });
-
-        // Initiales Aussehen der Linien setzen
-        feature.setStyle(createEdgeStyleNormal());
 
         vectorSource.addFeature(feature);
         edges2feature[edge.id] = feature;
     }
 
-    map.addLayer(new ol.layer.Vector({
-        source: vectorSource
-    }));
+    function styleFn(feature) {
+        let obj = feature.get('props');
+        if (isNode(obj)) {
+            return createNodeStyleNormal();
+        }
+
+        return createEdgeStyleNormal();
+    }
+
+    const exampleStyle = {
+
+
+        'stroke-color': ['match', ['get', 'type'], 'edge', '#000000ff', [255, 0, 0, 255]],
+        'stroke-width': 3,
+        'stroke-offset': 2,
+        'fill-color': ['match', ['get', 'type'], 'edge', '#000000ff', [255, 0, 0, 255]],
+
+        'circle-radius': ['match', ['get', 'type'], 'node', 5, 0],
+        'circle-color': ['match', ['get', 'type'], 'node', '#000000ff', [255, 0, 0, 255]],
+        'circle-stroke-color': ['match', ['get', 'type'], 'node', '#000000ff', [255, 0, 0, 255]],
+        'circle-stroke-width': 3,
+
+    }
+
+    // style expressions
+    // use #64748b for normal node color
+    // use #f59e0b for normal edge color
+    /**
+     * @type {ol.style.webgl.WebGLStyle}
+     */
+        // WebGl style expression, filter on node and edge
+
+        // style only for edges (filter on edge) LineString
+    // const style = [
+    //         {
+    //             'filter': ['==', ['geometry-type'], 'LineString'],
+    //             'style': {
+    //                 'stroke-color': ['*', ['get', 'COLOR'], [0, 0, 0, 255]],
+    //                 'stroke-width': 3,
+    //                 'stroke-offset': 2,
+    //                 'fill-color': ['*', ['get', 'COLOR'], [0, 0, 0, 255]],
+    //             }
+    //         },
+    //         {
+    //             'filter': ['==', ['geometry-type'], 'Point'],
+    //             'style': {
+    //                 'stroke-color': ['*', ['get', 'COLOR'], [0, 0, 0, 255]],
+    //                 'stroke-width': 3,
+    //                 'stroke-offset': 2,
+    //                 'fill-color': ['*', ['get', 'COLOR'], [0, 0, 0, 255]],
+    //             }
+    //         },
+    //     ];
+
+
+    let ltest = new ol.layer.Layer({
+        source: vectorSource,
+        style: exampleStyle
+    });
+
+    ltest.createRenderer = function () {
+        return new ol.renderer.webgl.VectorLayer(this, {
+            source: vectorSource,
+            style: exampleStyle
+        });
+    }
+
+
+    map.addLayer(ltest);
 
     // get last added layer (vector layer)
     const vectorLayer = map.getLayers().getArray().slice(-1)[0];
@@ -97,10 +172,10 @@ export function createGraphOverlay(
     //     alert('You clicked on ' + lonLat[0] + ', ' + lonLat[1] + ' with props ' + JSON.stringify(props));
     // });
 
-    const removeHoverLogicFn = createHoverLogicForGraphOverlay(map, graph, nodes2feature, edges2feature);
+    //const removeHoverLogicFn = createHoverLogicForGraphOverlay(map, graph, nodes2feature, edges2feature);
 
     return () => {
-        removeHoverLogicFn();
+        //removeHoverLogicFn();
         map.removeLayer(vectorLayer);
     }
 }

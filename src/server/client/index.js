@@ -15,9 +15,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     var map = new ol.Map({
+        renderer: 'webgl',
         target: 'map',
         layers: [
-            new ol.layer.Tile({
+            new ol.layer.WebGLTile({
                 source: new ol.source.OSM()
             })
         ],
