@@ -1,4 +1,3 @@
-
 export function colorsForNeighbourNodes(index) {
     return [
         "#e11d48",
@@ -13,33 +12,56 @@ export function colorsForNeighbourNodes(index) {
     ][index % 9];
 }
 
-function createNodeStyleWithParams(color, highlight=false) {
+const nodeStyleCache = {};
+
+
+function createNodeStyleWithParams(color, highlight = false) {
     let fillColor = highlight ? (color + "99") : 'rgba(255,255,255,0.4)';
 
-    return new ol.style.Style({
-        image: new ol.style.Circle({
-            radius: 6,
-            fill: new ol.style.Fill({
-                color: fillColor
-            }),
-            stroke: new ol.style.Stroke({
-                color: color,
-                width: 1.25
+    const key = color + highlight + "";
+
+    if (nodeStyleCache[key]) {
+        return nodeStyleCache[key];
+    } else {
+        const result = new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({
+                    color: fillColor
+                }),
+                stroke: new ol.style.Stroke({
+                    color: color,
+                    width: 1.25
+                })
             })
-        })
-    });
+        });
+
+        nodeStyleCache[key] = result;
+        return result;
+    }
 }
 
+const edgeStyleCache = {};
+
 function createEdgeStyleWithParams(color) {
-    return new ol.style.Style({
-        stroke: new ol.style.Stroke({
-            color: color,
-            width: 3
-        }),
-        fill: new ol.style.Fill({
-            color: 'rgba(255,255,255,0.1)'
-        })
-    });
+    const key = color;
+
+    if (edgeStyleCache[key]) {
+        return edgeStyleCache[key];
+    } else {
+        const result = new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: color,
+                width: 3
+            }),
+            fill: new ol.style.Fill({
+                color: 'rgba(255,255,255,0.1)'
+            })
+        });
+
+        edgeStyleCache[key] = result;
+        return result;
+    }
 }
 
 // Farbe des Knotens, wenn nicht über ihn gehovert wird.
@@ -56,8 +78,6 @@ export function createNodeStyleHover() {
 export function createNodeNeighborStyleHover(index) {
     return createNodeStyleWithParams(colorsForNeighbourNodes(index), true);
 }
-
-
 
 
 // Farbe der Kante, wenn nicht über sie gehovert ist.
