@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var center = getCookieOrDefault('last_saved_center_position', "[8.239761, 50.078218]");
     var zoom = getCookieOrDefault('last_saved_zoom_level', 12);
 
+    // renderer wird in cookies gespeichert (ist select elemtn) und wird daraus geladen
+    const renderer = getCookieOrDefault('renderer', 'webgl');
+    document.getElementById('renderer').value = renderer;
+
+    document.getElementById('renderer').addEventListener('change', function () {
+        Cookies.set('renderer', this.value);
+    });
+
     // Die Checkbox, die angibt ob der Tooltip fixiert werden soll oder nicht.
     const fixedTooltip = getCookieOrDefault('fixed_tooltip', false);
     document.getElementById('fixed-tooltip').checked = fixedTooltip;
