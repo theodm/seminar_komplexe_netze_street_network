@@ -14,7 +14,7 @@ export function getContentsOfTooltip(feature) {
 
         // create html for neighbors with color
         const neighborHtml = neighbors.map((neighbor, i) =>
-            `<span style="color: ${colorsForNeighbourNodes(i)}">
+            `<span style="color: ${colorsForNeighbourNodes[i % colorsForNeighbourNodes.length]}">
                 ${neighbor.id}
             </span>`
         ).join('');
