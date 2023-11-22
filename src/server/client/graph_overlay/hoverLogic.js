@@ -3,6 +3,7 @@ import { createNodeStyleNormal } from './styles.js';
 import { createEdgeStyleHover } from './styles.js';
 import { createEdgeStyleNormal } from './styles.js';
 import { createNodeNeighborStyleHover } from './styles.js';
+import { colorsForNeighbourNodes } from './styles.js';
 import { findEdgeIdsForNodeWithType } from '../graph/graph.js';
 import { isNode } from '../graph/graph.js';
 import { getContentsOfTooltip } from './tooltip.js';
@@ -31,11 +32,11 @@ export function createHoverLogicForGraphOverlay(
      */
     function resetStylesForHoveredElements() {
         for (let nodeId of hoveredNodes) {
-            nodes2feature[nodeId].setStyle(createNodeStyleNormal());
+            nodes2feature[nodeId].set('nodeStatus','normal');
         }
 
         for (let edgeId of hoveredEdges) {
-            edges2feature[edgeId].setStyle(createEdgeStyleNormal());
+            edges2feature[edgeId].set('edgeStatus', 'normal');
         }
 
         hoveredNodes = [];
@@ -72,16 +73,18 @@ export function createHoverLogicForGraphOverlay(
             if (isNode(obj)) {
                 let node = obj;
                 let nodeId = node.id
-
+                
                 // Highlight base Node
-                nodes2feature[nodeId].setStyle(createNodeStyleHover());
                 hoveredNodes.push(nodeId);
+                nodes2feature[nodeId].set('nodeStatus', 'nodeIsHovered');
 
-                // Highligh neighbors
+                // Highlight neighbors 
                 const neighbors = node.neighbors;
                 for (let i = 0; i < neighbors.length; i++) {
                     const neighborId = neighbors[i].id;
-                    nodes2feature[neighborId].setStyle(createNodeNeighborStyleHover(i));
+                    nodes2feature[neighborId].set('nodeStatus', 'nodeIsHovered_NodeNeighbor');
+                    nodes2feature[neighborId].set('neighborHoveredNodeColor', ( i % colorsForNeighbourNodes.length ) + "");
+
                     hoveredNodes.push(neighborId);
                 }
 
@@ -92,19 +95,20 @@ export function createHoverLogicForGraphOverlay(
                 for (const [edgeId, type] of Object.entries(edgesToColor)) {
                     hoveredEdges.push(edgeId);
 
-                    edges2feature[edgeId].setStyle(createEdgeStyleHover(type));
+                    edges2feature[edgeId].set('edgeStatus', 'nodeIsHovered_EdgeNeighbor');
+                    edges2feature[edgeId].set('neighborHoveredEdgeColor', type);
                 }
             } else {
                 const edge = obj;
                 const edgeId = obj.id;
 
                 // highlight edge
-                edges2feature[edgeId].setStyle(createEdgeStyleHover(edge.oneway ? "source" : "both"));
+                edges2feature[edgeId].set('edgeStatus', 'edgeIsHovered');
                 hoveredEdges.push(edgeId);
 
                 // highlight source and target node
-                nodes2feature[obj.source.id].setStyle(createNodeStyleHover());
-                nodes2feature[obj.target.id].setStyle(createNodeNeighborStyleHover(0));
+                nodes2feature[obj.source.id].set('nodeStatus', 'edgeIsHovered_NodeNeighbor');
+                nodes2feature[obj.target.id].set('nodeStatus', 'edgeIsHovered_NodeNeighbor');
 
                 hoveredNodes.push(obj.source.id);
                 hoveredNodes.push(obj.target.id);
@@ -115,6 +119,19 @@ export function createHoverLogicForGraphOverlay(
             resetStylesForHoveredElements();
 
             info.style.visibility = 'hidden';
+        },
+
+        /**
+         * Diese Funktion gibt an, welches Feature priorisiert werden soll, 
+         * wenn der Benutzer mit seinem Mauszeiger über mehrere Features hovert. Dabei wird
+         * eine Hit-Toleranz berücksichtigt, für große Finger. 
+         */
+        function (features) {
+            // Node priorisieren wir beim Hover vor Edges, da Edges
+            // sowieso einfacher zu hovern sind.
+            const nodeFeatures = features.filter(f => isNode(f.get('props')));
+
+            return nodeFeatures.length > 0 ? nodeFeatures[0] : features[0];
         }
     );
 

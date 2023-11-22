@@ -5,7 +5,13 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <!-- Bibliothek zum Darstellen der OSM-Maps. Bietet zahlreiche weitere Features zur Interaktion mit den Karten. -->
-    <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script> -->
+    <!-- 
+        ToDo: Hier wird die Entwicklungsversion von openlayers verwendet, da die aktuelle Version (8.2.0) einen Bug enthält bei der Implementation 
+        des WebGLVectorLayer. Dadurch lassen sich die Features nicht richtig auswählen / hovern. Mit der aktuelleren Version ist das behoben; leider funktioniert
+        die hitTolerance dort auch nicht :/
+     -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/9.0.0-dev.1700569525429/dist/ol.min.js" integrity="sha512-w8jLSh7vJxSqgM0IZwPVwfRnmJYTrk6vPfvF353yFTOaRKUoXt/PUVquWHZUzwOR1w+vQ9CCc0HBanSWQbr5CQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- Bibliothek für HTTP-Requests -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- Bibliothek zum einfachen Speichern / Laden von Cookies -->
@@ -75,6 +81,9 @@
         }
 
         .settings-box input {
+            margin-top: 2px;
+        }
+        .settings-box select {
             margin-top: 2px;
         }
 
@@ -168,6 +177,11 @@
             <select id="graph-type" name="graph-type">
                 <option value="MultiDiGraph">default (MultiDiGraph)</option>
                 <option value="Graph">simple (Graph)</option>
+            </select>
+            <select id="renderer" name="renderer">
+                <option value="vector">vector (slowest, hq)</option>
+                <option value="vectorImage">vectorImage (slow, lq)</option>
+                <option value="webgl" selected="selected">webgl (fast, hq, buggy)</option>
             </select>
             <input type="button" name="load-graph-button" id="load-graph-button" value="Load Graph for BBox">
             <input type="button" name="load-graph-button" id="clear-cookies-button" value="Clear Cookies">

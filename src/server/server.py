@@ -2,7 +2,7 @@ from bottle import Bottle, run, request, response, static_file, route, get
 import osmnx as ox
 from networkx.classes.reportviews import NodeView
 
-from src.server.graph.mdig_to_graph import mdig_to_graph
+from graph.mdig_to_graph import mdig_to_graph
 
 
 # Mit diesen Anweisungen werden alle Dateien im Ordner ./client

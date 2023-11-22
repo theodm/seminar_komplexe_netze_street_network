@@ -1,105 +1,92 @@
-export function colorsForNeighbourNodes(index) {
-    return [
-        "#e11d48",
-        "#22c55e",
-        "#c026d3",
-        "#a3e635",
-        "#6d28d9",
-        "#38bdf8",
-        "#ea580c",
-        "#f9a8d4",
-        "#f59e0b"
-    ][index % 9];
-}
 
-const nodeStyleCache = {};
+export const colorsForNeighbourNodes = [
+    "#e11d48",
+    "#22c55e",
+    "#c026d3",
+    "#a3e635",
+    "#6d28d9",
+    "#38bdf8",
+    "#ea580c",
+    "#f9a8d4",
+    "#f59e0b"
+];
+// map to ol colors
 
+const nodeColorNormal = '#64748b';
+const nodeColorHover = '#f59e0b';
 
-function createNodeStyleWithParams(color, highlight = false) {
-    let fillColor = highlight ? (color + "99") : 'rgba(255,255,255,0.4)';
+const edgeColorNormal = '#64748b';
+const edgeColorHovered = '#f59e0b';
 
-    const key = color + highlight + "";
+const edgeColorHighlightSource = '#f59e0b';
+const edgeColorHighlightTarget = '#1e293b';
+const edgeColorHighlightBoth = '#dc2626';
 
-    if (nodeStyleCache[key]) {
-        return nodeStyleCache[key];
-    } else {
-        const result = new ol.style.Style({
-            image: new ol.style.Circle({
-                radius: 6,
-                fill: new ol.style.Fill({
-                    color: fillColor
-                }),
-                stroke: new ol.style.Stroke({
-                    color: color,
-                    width: 1.25
-                })
-            })
-        });
+/**
+ * Wir verwenden hier Style-Expressions, da diese von allen verwendeten 
+ * Renderern unterstützt wird. Das ist eine spezielle Art von Programmiersprache,
+ * die bei openlayers verwendet wird, um die Styles von Features dynamisch nach
+ * Attributwerten zu definieren.
+ * 
+ * siehe auch: 
+ * https://github.com/openlayers/openlayers/blob/28c4728b620d0a44bd61a33fc28f726b2efdf650/src/ol/expr/expression.js
+ * https://github.com/openlayers/openlayers/blob/main/src/ol/style/webgl.js
+ */
+export function styleExpression() {
 
-        nodeStyleCache[key] = result;
-        return result;
+    const ifEdgeExpression = (expr, defaultValue) => {
+        return ['match', ['get', 'type'], 'edge', expr, defaultValue]
     }
-}
 
-const edgeStyleCache = {};
-
-function createEdgeStyleWithParams(color) {
-    const key = color;
-
-    if (edgeStyleCache[key]) {
-        return edgeStyleCache[key];
-    } else {
-        const result = new ol.style.Style({
-            stroke: new ol.style.Stroke({
-                color: color,
-                width: 3
-            }),
-            fill: new ol.style.Fill({
-                color: 'rgba(255,255,255,0.1)'
-            })
-        });
-
-        edgeStyleCache[key] = result;
-        return result;
+    const ifNodeExpression = (expr, defaultValue) => {
+        return ['match', ['get', 'type'], 'node', expr, defaultValue]
     }
+
+    const edgeColorExpression = [
+        'match',
+        ['get', 'edgeStatus'], 
+        'normal', edgeColorNormal,
+        'edgeIsHovered', edgeColorHovered,
+        'nodeIsHovered_EdgeNeighbor', ['match', ['get', 'neighborHoveredEdgeColor'], 'source', edgeColorHighlightSource, 'target', edgeColorHighlightTarget, edgeColorHighlightBoth],            
+        '#FF0000'
+    ]
+
+    const nodeColorExpression = [
+        'match',
+        ['get', 'nodeStatus'], 
+        'normal', nodeColorNormal,
+        'nodeIsHovered', nodeColorHover,
+        // ToDo: Das ist unschön aber mit dem palette-Operator hat es nicht funktioniert.
+    
+        'nodeIsHovered_NodeNeighbor', ['match', ['get', 'neighborHoveredNodeColor'], 
+            '0', _colorsForNeighbourNodes[0], 
+            '1', _colorsForNeighbourNodes[1], 
+            '2', _colorsForNeighbourNodes[2], 
+            '3', _colorsForNeighbourNodes[3], 
+            '4', _colorsForNeighbourNodes[4], 
+            '5', _colorsForNeighbourNodes[5], 
+            '6', _colorsForNeighbourNodes[6],
+            '7', _colorsForNeighbourNodes[7],
+            '8', _colorsForNeighbourNodes[8],
+            "#ffffff"
+        ],
+        'edgeIsHovered_NodeNeighbor', nodeColorHover,
+        '#00000000'
+    ]
+
+    const styleExpression = {
+        'stroke-color': ifEdgeExpression(edgeColorExpression, "#00000000"),
+        'stroke-width': 3,
+        'fill-color': '#ffffff19',
+
+        'circle-radius': 6,
+        'circle-color': '#00000066',
+        'circle-stroke-color': ifNodeExpression(nodeColorExpression, "#00000000"),
+        'circle-stroke-width': 1.25,
+    }
+
+    console.log(JSON.stringify(styleExpression, null, 2))
+
+    return styleExpression;
 }
 
-// Farbe des Knotens, wenn nicht über ihn gehovert wird.
-export function createNodeStyleNormal() {
-    return createNodeStyleWithParams('#64748b');
-}
-
-// Farbe des Knotens, wenn über ihn gehovert wird.
-export function createNodeStyleHover() {
-    return createNodeStyleWithParams('#f59e0b', true);
-}
-
-// Farbe der Nachbarknoten, wenn über den Base-Knoten gehovert wird.
-export function createNodeNeighborStyleHover(index) {
-    return createNodeStyleWithParams(colorsForNeighbourNodes(index), true);
-}
-
-
-// Farbe der Kante, wenn nicht über sie gehovert ist.
-export function createEdgeStyleNormal() {
-    return createEdgeStyleWithParams('#64748b');
-}
-
-// Farbe der Kante, wenn über einen Knoten gehovert wird.
-export function createEdgeStyleHover(type) {
-    // Farbe der ausgehenden Kante, wenn ein Knoten
-    // ausgewählt ist. (Wenn also der Knoten Quelle einer Kante ist.)
-    const edgeColorHighlightSource = '#f59e0b';
-
-    // Farbe der eingehenden Kante, wenn ein Knoten 
-    // ausgewählt ist. (Wenn also der Knoten Ziel einer Kante ist.)
-    const edgeColorHighlightTarget = '#1e293b';
-
-    // Farbe einer Kante, wenn ein Knoten ausgewählt ist und
-    // die Kante sowohl eingehende als auch ausgehende Kante ist.
-    const edgeColorHighlightBoth = '#dc2626';
-
-    let color = type === "both" ? edgeColorHighlightBoth : type === "source" ? edgeColorHighlightSource : edgeColorHighlightTarget;
-
-    return createEdgeStyleWithParams(color);
-}

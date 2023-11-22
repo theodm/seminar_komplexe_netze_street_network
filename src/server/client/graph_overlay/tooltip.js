@@ -30,6 +30,7 @@ export function getContentsOfTooltip(feature) {
                     .map(([key, value]) => `<p>${key}: ${value}</p>`)
                     .join('')}
                 <p>neighbours: ${neighborHtml}</p>
+                
             </div>
         `;
     }
