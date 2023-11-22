@@ -1,5 +1,3 @@
-import {createNodeStyleNormal} from './styles.js';
-import {createEdgeStyleNormal} from './styles.js';
 import {styleExpression} from './styles.js';
 import {edgeGetGeometry, isNode} from '../graph/graph.js';
 import {createHoverLogicForGraphOverlay} from './hoverLogic.js';

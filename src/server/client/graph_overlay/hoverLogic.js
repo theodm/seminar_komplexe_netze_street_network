@@ -1,8 +1,3 @@
-import { createNodeStyleHover } from './styles.js';
-import { createNodeStyleNormal } from './styles.js';
-import { createEdgeStyleHover } from './styles.js';
-import { createEdgeStyleNormal } from './styles.js';
-import { createNodeNeighborStyleHover } from './styles.js';
 import { colorsForNeighbourNodes } from './styles.js';
 import { findEdgeIdsForNodeWithType } from '../graph/graph.js';
 import { isNode } from '../graph/graph.js';
