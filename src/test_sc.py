@@ -9,7 +9,7 @@ memory = Memory("cachedir", verbose=0)
 def cached_graph_from_place(place, network_type):
     return ox.graph_from_place(place, network_type=network_type)
 # load the primal graph from osmnx
-oxg = cached_graph_from_place("Darmstadt, Germany", network_type="drive")
+oxg = cached_graph_from_place("Braunfels, Germany", network_type="drive")
 
 
 # @memory.cache
@@ -128,4 +128,4 @@ def plot_with_colors(oxg: nx.MultiDiGraph, min_angle: int = 90, min_degree: int 
     fig, ax = ox.plot_graph(
         oxg, edge_color=ec, edge_linewidth=2, node_size=0, dpi=5000, figsize=(30, 30))
 
-plot_with_degree(oxg)
+plot_with_colors(oxg)

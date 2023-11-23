@@ -3,6 +3,7 @@
  * GraphResponse is of type
  *
  * interface Graph {
+ *     graphkey: string;
  *     // nid = node id
  *     nodes: { [nid: number]: Node };
  *     // eid = [sourceId,targetId,index]

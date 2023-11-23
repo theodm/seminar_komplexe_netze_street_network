@@ -1,5 +1,6 @@
 from bottle import Bottle, run, request, response, static_file, route, get
 import osmnx as ox
+import networkx as nx
 from networkx.classes.reportviews import NodeView
 
 from graph.mdig_to_graph import mdig_to_graph
@@ -17,6 +18,56 @@ def server_static():
 def server_static(filepath):
     return static_file(filepath, root='./client')
 
+graph_cache = {
+
+}
+
+# @get("/api/node_info_")
+# def node_info():
+#     global graph_cache
+#
+#     graphkey = request.query.graphkey
+#
+#     if graphkey not in graph_cache:
+#         raise Exception("Graph not found")
+#
+#     graph = graph_cache[graphkey]
+#
+#     return {
+#         "cluster_coefficient": ox.clustering(graph)
+#     }
+
+@get("/api/shortest_path_info")
+def shortest_path_info():
+    global graph_cache
+
+    graphkey = request.query.graphkey
+
+    if graphkey not in graph_cache:
+        raise Exception("Graph not found")
+
+    graph = graph_cache[graphkey]
+
+    # ToDo: Bei allen Requests die Fehler im JS / HTML
+    # auslesen und als Modal ausgeben, damit der Benutzer
+    # weiß was schief gelaufen ist.
+
+    try:
+        average_shortest_path_length = nx.average_shortest_path_length(graph)
+    except nx.NetworkXError:
+        average_shortest_path_length = "<not connected>"
+
+    try:
+        diameter = nx.diameter(graph)
+    except nx.NetworkXError:
+        diameter = "<not connected>"
+
+    return {
+        "graphkey": graphkey,
+        "graphType": "Graph" if graph is nx.Graph else "MultiDiGraph",
+        "average_shortest_path_length": average_shortest_path_length,
+        "diameter": diameter,
+    }
 
 
 # get route /api/graph with query parameter north, east, south...
@@ -24,6 +75,8 @@ def server_static(filepath):
 # calculates route with osmnx and returns nodes and edges
 @get('/api/graph')
 def graph():
+    global graph_cache
+
     north = request.query.north
     east = request.query.east
     south = request.query.south
@@ -100,7 +153,11 @@ def graph():
     avg_degree = sum(dict(degrees).values()) / num_nodes
     min_degree = min(dict(degrees).values())
 
+    graphkey = "graph" + north + "_" + east + "_" + south + "_" + west + "_" + graph_type
+    graph_cache[graphkey] = oxg
+
     return {
+        "graphkey": graphkey,
         "graphType": graph_type,
         "nodes": nodes,
         "edges": edges,

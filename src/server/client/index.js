@@ -1,5 +1,5 @@
-import { getCookieOrDefault } from './util/cookie.js';
-import { createGraphOverlay } from './graph_overlay/graphOverlay.js';
+import {getCookieOrDefault} from './util/cookie.js';
+import {createGraphOverlay} from './graph_overlay/graphOverlay.js';
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     let removeGraphOverlayFn = undefined
+    let currentGraph = undefined;
 
     // on graph load, request to server /graph
     // with bbox as query parameter (keys: north, east, ...) in axios returns
@@ -100,6 +101,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         axios.get(url)
             .then(function (response) {
+                currentGraph = response.data;
+
                 if (removeGraphOverlayFn) {
                     console.log('remove graph overlay')
                     // remove old graph overlay
@@ -123,6 +126,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(error);
                 alert('Error loading graph');
             });
+    });
+
+
+    document.getElementById('load-shortest-path-info-button').addEventListener('click', function () {
+        if (!currentGraph) {
+            alert('No graph loaded');
+            return;
+        }
+        const graphkey = currentGraph.graphkey
+
+        var url = '/api/shortest_path_info?graphkey=' + graphkey;
+
+        axios.get(url)
+            .then(function (response) {
+                const data = response.data;
+
+                document.getElementById('average_shortest_path_length').innerText = data.average_shortest_path_length;
+                document.getElementById('diameter').innerText = data.diameter;
+            })
+            .catch(function (error) {
+                console.log(error);
+                alert('Error loading shortest path info');
+            });
+
     });
 
     document.getElementById('clear-cookies-button').addEventListener('click', function () {
