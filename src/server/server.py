@@ -52,6 +52,21 @@ def shortest_path_info():
     # auslesen und als Modal ausgeben, damit der Benutzer
     # weiß was schief gelaufen ist.
 
+    # find all nodes which don't have a shortest path to all other node
+    # and return them as array
+    nodes_without_shortest_path = []
+
+    for node in graph.nodes:
+        try:
+            res = nx.shortest_path_length(graph, node)
+
+            if len(res) != graph.number_of_nodes():
+                nodes_without_shortest_path.append(node)
+
+        except nx.NetworkXNoPath:
+            nodes_without_shortest_path.append(node)
+
+
     try:
         average_shortest_path_length = nx.average_shortest_path_length(graph)
     except nx.NetworkXError:
@@ -64,6 +79,7 @@ def shortest_path_info():
 
     return {
         "graphkey": graphkey,
+        "no_path_to_all_nodes": [int(node) for node in nodes_without_shortest_path],
         "graphType": "Graph" if graph is nx.Graph else "MultiDiGraph",
         "average_shortest_path_length": average_shortest_path_length,
         "diameter": diameter,

@@ -79,8 +79,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
-    let removeGraphOverlayFn = undefined
     let currentGraph = undefined;
+    let currentGraphOverlayAccess = undefined;
 
     // on graph load, request to server /graph
     // with bbox as query parameter (keys: north, east, ...) in axios returns
@@ -103,10 +103,10 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(function (response) {
                 currentGraph = response.data;
 
-                if (removeGraphOverlayFn) {
+                if (currentGraphOverlayAccess) {
                     console.log('remove graph overlay')
                     // remove old graph overlay
-                    removeGraphOverlayFn();
+                    currentGraphOverlayAccess.remove();
                 }
 
                 const graph = response.data;
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('avg_degree').innerHTML = graph.graphInfo.avgDegree;
                 document.getElementById('min_degree').innerHTML = graph.graphInfo.minDegree;
 
-                removeGraphOverlayFn = createGraphOverlay(map, graph);
+                currentGraphOverlayAccess = createGraphOverlay(map, graph);
             })
             .catch(function (error) {
                 console.log(error);
@@ -144,6 +144,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 document.getElementById('average_shortest_path_length').innerText = data.average_shortest_path_length;
                 document.getElementById('diameter').innerText = data.diameter;
+
+                if (currentGraphOverlayAccess) {
+                    currentGraphOverlayAccess.setNodesNoPathToAllNodes(data.no_path_to_all_nodes);
+                } else {
+                    alert('No graph overlay loaded');
+                }
+
+
             })
             .catch(function (error) {
                 console.log(error);

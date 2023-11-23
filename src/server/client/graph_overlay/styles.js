@@ -14,6 +14,7 @@ export const colorsForNeighbourNodes = [
 
 const nodeColorNormal = '#64748b';
 const nodeColorHover = '#f59e0b';
+const nodeColorNoPathToAllOther = '#000000';
 
 const edgeColorNormal = '#64748b';
 const edgeColorHovered = '#f59e0b';
@@ -53,8 +54,8 @@ export function styleExpression() {
 
     const nodeColorExpression = [
         'match',
-        ['get', 'nodeStatus'], 
-        'normal', nodeColorNormal,
+        ['get', 'nodeStatus'],
+        'normal', ['match', ['get', 'nodeHighlight'], 'noPathToAllOther', nodeColorNoPathToAllOther, nodeColorNormal],
         'nodeIsHovered', nodeColorHover,
         // ToDo: Das ist unschön aber mit dem palette-Operator hat es nicht funktioniert.
     

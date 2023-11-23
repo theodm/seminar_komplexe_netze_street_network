@@ -53,7 +53,7 @@ export function createGraphOverlay(
             "nodeStatus": "normal",
 
             props: node,
-            
+
         });
 
         vectorSource.addFeature(feature);
@@ -121,8 +121,22 @@ export function createGraphOverlay(
 
     const removeHoverLogicFn = createHoverLogicForGraphOverlay(map, graph, nodes2feature, edges2feature);
 
-    return () => {
-        removeHoverLogicFn();
-        map.removeLayer(vectorLayer);
+    return {
+        remove: () => {
+            removeHoverLogicFn();
+            map.removeLayer(vectorLayer);
+        },
+
+        /**
+         * Hier können die Nodes (=IDs) übergeben werden, die nicht zu allen Knoten
+         * einen Weg haben. Von denen aus also nicht alle anderen Knoten erreicht werden
+         * können.
+         */
+        setNodesNoPathToAllNodes(nodesNoPathToAllNodes) {
+            for (const nodeId of nodesNoPathToAllNodes) {
+                nodes2feature[nodeId].set('nodeHighlight', 'noPathToAllOther');
+            }
+        }
+
     }
 }

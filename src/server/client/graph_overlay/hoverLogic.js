@@ -27,7 +27,7 @@ export function createHoverLogicForGraphOverlay(
      */
     function resetStylesForHoveredElements() {
         for (let nodeId of hoveredNodes) {
-            nodes2feature[nodeId].set('nodeStatus','normal');
+            nodes2feature[nodeId].set('nodeStatus', 'normal');
         }
 
         for (let edgeId of hoveredEdges) {
@@ -68,7 +68,7 @@ export function createHoverLogicForGraphOverlay(
             if (isNode(obj)) {
                 let node = obj;
                 let nodeId = node.id
-                
+
                 // Highlight base Node
                 hoveredNodes.push(nodeId);
                 nodes2feature[nodeId].set('nodeStatus', 'nodeIsHovered');
