@@ -22,6 +22,8 @@ graph_cache = {
 
 }
 
+
+
 # @get("/api/node_info_")
 # def node_info():
 #     global graph_cache
@@ -57,6 +59,33 @@ def get_dead_ends(graph):
     return [node for component in components for node in component]
 
 
+
+# @get("/api/color_edge_betweenness_centrality")
+# def color_relative_betweenness():
+#     global graph_cache
+#
+#     graphkey = request.query.graphkey
+#
+#     if graphkey not in graph_cache:
+#         raise Exception("Graph not found")
+#
+#     graph = graph_cache[graphkey]
+#
+#     edge_betweenness_centrality = nx.edge_betweenness_centrality(graph)
+
+
+def get_graph_type_as_str(graph):
+    if isinstance(graph, nx.Graph):
+        return "Graph"
+    elif isinstance(graph, nx.MultiGraph):
+        return "MultiGraph"
+    elif isinstance(graph, nx.DiGraph):
+        return "DiGraph"
+    elif isinstance(graph, nx.MultiDiGraph):
+        return "MultiDiGraph"
+    else:
+        raise Exception("Invalid graph type")
+
 @get("/api/shortest_path_info")
 def shortest_path_info():
     global graph_cache
@@ -71,7 +100,10 @@ def shortest_path_info():
     # ToDo: Bei allen Requests die Fehler im JS / HTML
     # auslesen und als Modal ausgeben, damit der Benutzer
     # weiß was schief gelaufen ist.
-    nodes_without_shortest_path = get_dead_ends(graph)
+    # only if graph instance of mMltiDiGraph or DiGraph
+    dead_ends = []
+    if isinstance(graph, nx.MultiDiGraph) or isinstance(graph, nx.DiGraph):
+        dead_ends = get_dead_ends(graph)
 
     try:
         average_shortest_path_length = nx.average_shortest_path_length(graph)
@@ -85,8 +117,8 @@ def shortest_path_info():
 
     return {
         "graphkey": graphkey,
-        "no_path_to_all_nodes": [int(node) for node in nodes_without_shortest_path],
-        "graphType": "Graph" if graph is nx.Graph else "MultiDiGraph",
+        "no_path_to_all_nodes": [int(node) for node in dead_ends],
+        "graphType": get_graph_type_as_str(graph),
         "average_shortest_path_length": average_shortest_path_length,
         "diameter": diameter,
     }
@@ -103,20 +135,30 @@ def graph():
     east = request.query.east
     south = request.query.south
     west = request.query.west
-    filter_dead_ends = request.query.get_dead_ends == "true"
+    _filter_dead_ends = request.query.filter_dead_ends == "true"
 
     oxg = ox.graph_from_bbox(north, south, east, west, network_type='drive')
+
 
     # request type can be Graph or MultiDiGraph
     graph_type = request.query.type
     if graph_type == "Graph":
         oxg = mdig_to_graph(oxg)
+    elif graph_type == "DiGraph":
+        oxg = ox.utils_graph.get_digraph(oxg)
+    elif graph_type == "MultiGraph":
+        oxg = ox.utils_graph.get_undirected(oxg)
     elif graph_type == "MultiDiGraph":
         pass
     else:
         raise Exception("Invalid request type")
 
     nodes = {}
+
+    if _filter_dead_ends and (isinstance(oxg, nx.MultiDiGraph) or isinstance(oxg, nx.DiGraph)):
+        dead_ends = get_dead_ends(oxg)
+        print("Filtering dead ends" + str(dead_ends))
+        oxg.remove_nodes_from(get_dead_ends(oxg))
 
     def node_view_to_node_json(nid: int, node: NodeView, recursive: bool):
         obj = {
@@ -148,6 +190,10 @@ def graph():
 
         if graph_type == "Graph":
             str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "]"
+        elif graph_type == "DiGraph":
+            str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "]"
+        elif graph_type == "MultiGraph":
+            str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "," + str(edge_id[2]) + "]"
         elif graph_type == "MultiDiGraph":
             str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "," + str(edge_id[2]) + "]"
         else:
@@ -183,20 +229,27 @@ def graph():
     avg_degree = sum(dict(degrees).values()) / num_nodes
     min_degree = min(dict(degrees).values())
 
+    global_cluster_coefficient_avg = '<multi graph>'
+    if graph_type == "Graph" or graph_type == "DiGraph":
+        # Alle Knoten bekommen ein Attribut "local_cluster_coefficient" mit dem lokalen Cluster-Koeffizienten
+        # (Anzahl der Kanten zwischen den Nachbarn eines Knotens / Anzahl der möglichen Kanten zwischen den Nachbarn eines Knotens)
+        for node_id in oxg.nodes:
+            nodes[node_id]["local_cluster_coefficient"] = nx.clustering(oxg, node_id)
+
+        global_cluster_coefficient_avg = nx.average_clustering(oxg)
+
     # Wir speichern einen Graph_Key für diesen Graphen
     # damit dieser vom Client erneut referenziert werden kann
     # und dann nicht neu berechnet werden muss.
     # Potzentiell unsicher und ineffizient: Diese Anwendung sollte nur lokal verwendet
     # werden, niemals über das Internet verfügbar sein. (DDOS, etc.)
-    graphkey = "graph" + north + "_" + east + "_" + south + "_" + west + "_" + graph_type + "_" + str(filter_dead_ends)
+    graphkey = "graph" + north + "_" + east + "_" + south + "_" + west + "_" + graph_type + "_" + str(_filter_dead_ends)
     graph_cache[graphkey] = oxg
 
-    if filter_dead_ends:
-        oxg.remove_nodes_from(filter_dead_ends(oxg))
 
     return {
         "graphkey": graphkey,
-        "filter_dead_ends": bool(filter_dead_ends),
+        "filter_dead_ends": bool(_filter_dead_ends),
         "graphType": graph_type,
         "nodes": nodes,
         "edges": edges,
@@ -205,7 +258,8 @@ def graph():
             "numEdges": num_edges,
             "maxDegree": max_degree,
             "avgDegree": avg_degree,
-            "minDegree": min_degree
+            "minDegree": min_degree,
+            "globalClusterCoefficientAvg": global_cluster_coefficient_avg
         }
     }
 

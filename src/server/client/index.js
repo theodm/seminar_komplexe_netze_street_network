@@ -130,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('max_degree').innerHTML = graph.graphInfo.maxDegree;
                 document.getElementById('avg_degree').innerHTML = graph.graphInfo.avgDegree;
                 document.getElementById('min_degree').innerHTML = graph.graphInfo.minDegree;
+                document.getElementById('global_cluster_officient_avg').innerText = graph.graphInfo.globalClusterCoefficientAvg
 
                 currentGraphOverlayAccess = createGraphOverlay(map, graph);
             })

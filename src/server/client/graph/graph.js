@@ -16,6 +16,7 @@
  *         maxDegree: number;
  *         avgDegree: number;
  *         minDegree: number;
+ *         globalClusterCoefficientAvg: number;
  *     };
  * }
  * 
