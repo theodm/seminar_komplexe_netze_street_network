@@ -133,6 +133,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('global_cluster_officient_avg').innerText = graph.graphInfo.globalClusterCoefficientAvg
 
                 currentGraphOverlayAccess = createGraphOverlay(map, graph);
+
+                // Knoten-Histogramm anzeigen
+                document.getElementById('image-container').innerHTML = '<img src="/api/degree_histogram?graphkey=' + graph.graphkey + '" alt="Degree Histogram" />'
+
             })
             .catch(function (error) {
                 console.log(error);
@@ -162,7 +166,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     alert('No graph overlay loaded');
                 }
-
 
             })
             .catch(function (error) {

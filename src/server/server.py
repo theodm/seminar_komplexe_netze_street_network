@@ -73,6 +73,30 @@ def get_dead_ends(graph):
 #
 #     edge_betweenness_centrality = nx.edge_betweenness_centrality(graph)
 
+@get("/api/degree_histogram")
+def degree_histogram():
+    global graph_cache
+
+    graphkey = request.query.graphkey
+
+    if graphkey not in graph_cache:
+        raise Exception("Graph not found")
+
+    graph = graph_cache[graphkey]
+
+    import matplotlib.pyplot as plt
+    import io
+    import base64
+
+    degrees = [d for n, d in graph.degree()]
+    plt.hist(degrees, bins=range(min(degrees), max(degrees) + 1, 1))
+
+    response.content_type = 'image/png'
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    return buf.read()
 
 def get_graph_type_as_str(graph):
     if isinstance(graph, nx.Graph):
