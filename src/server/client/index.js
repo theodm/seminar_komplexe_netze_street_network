@@ -22,6 +22,16 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.set('fixed_tooltip', this.checked);
     });
 
+    // Die Checkbox, die angibt ob tote Knoten, von denen aus nicht alle anderen Knoten
+    // erreicht werden können, angezeigt werden sollen.
+    const filterDeadEnds = getCookieOrDefault('filter_dead_ends', false);
+    document.getElementById('filter-dead-ends').checked = filterDeadEnds;
+
+    document.getElementById('filter-dead-ends').addEventListener('change', function () {
+        Cookies.set('filter_dead_ends', this.checked);
+    });
+
+
     var map = new ol.Map({
         renderer: 'webgl',
         target: 'map',
@@ -97,7 +107,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log('graphType: ' + graphType)
 
-        var url = '/api/graph?north=' + extent[0] + '&east=' + extent[1] + '&south=' + extent[2] + '&west=' + extent[3] + '&type=' + graphType;
+        let filterDeadEnds = document.getElementById('filter-dead-ends').checked;
+        const url = '/api/graph?north=' + extent[0] + '&east=' + extent[1] + '&south=' + extent[2] + '&west=' + extent[3] + '&type=' + graphType + '&filter_dead_ends=' + filterDeadEnds
 
         axios.get(url)
             .then(function (response) {

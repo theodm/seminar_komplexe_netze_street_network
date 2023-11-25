@@ -11,7 +11,9 @@
         des WebGLVectorLayer. Dadurch lassen sich die Features nicht richtig auswählen / hovern. Mit der aktuelleren Version ist das behoben; leider funktioniert
         die hitTolerance dort auch nicht :/
      -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/9.0.0-dev.1700569525429/dist/ol.min.js" integrity="sha512-w8jLSh7vJxSqgM0IZwPVwfRnmJYTrk6vPfvF353yFTOaRKUoXt/PUVquWHZUzwOR1w+vQ9CCc0HBanSWQbr5CQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/9.0.0-dev.1700569525429/dist/ol.min.js"
+            integrity="sha512-w8jLSh7vJxSqgM0IZwPVwfRnmJYTrk6vPfvF353yFTOaRKUoXt/PUVquWHZUzwOR1w+vQ9CCc0HBanSWQbr5CQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- Bibliothek für HTTP-Requests -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- Bibliothek zum einfachen Speichern / Laden von Cookies -->
@@ -83,6 +85,7 @@
         .settings-box input {
             margin-top: 2px;
         }
+
         .settings-box select {
             margin-top: 2px;
         }
@@ -179,8 +182,18 @@
         <div id="settings-buttons" class="settings-box">
             <!-- checkbox to enable/disable fixed position of tooltip -->
             <div class="settings-checkbox">
-                <label for="fixed-tooltip">Fixed Tooltip</label>
-                <input type="checkbox" name="fixed-tooltip" id="fixed-tooltip" value="fixed-position">
+                <label for="fixed-tooltip">fixed Tooltip</label>
+                <input type="checkbox" name="fixed-tooltip" id="fixed-tooltip">
+            </div>
+            <div>
+                <div class="settings-checkbox">
+                    <label for="filter-dead-ends">filter dead ends (lscc)</label>
+                    <input type="checkbox" name="filter-dead-ends" id="filter-dead-ends">
+                </div>
+                <details>
+                    <summary>Info</summary>
+                    <p>lscc = largest strongly connected component</p>
+                </details>
             </div>
             <select id="graph-type" name="graph-type">
                 <option value="MultiDiGraph">default (MultiDiGraph)</option>
@@ -192,7 +205,8 @@
                 <option value="webgl" selected="selected">webgl (fast, hq, buggy)</option>
             </select>
             <input type="button" name="load-graph-button" id="load-graph-button" value="Load Graph for BBox">
-            <input type="button" name="load-graph-button" id="load-shortest-path-info-button" value="Shortest Path Info (last)">
+            <input type="button" name="load-graph-button" id="load-shortest-path-info-button"
+                   value="Shortest Path Info (last)">
             <input type="button" name="load-graph-button" id="clear-cookies-button" value="Clear Cookies">
         </div>
     </div>

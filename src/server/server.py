@@ -37,6 +37,26 @@ graph_cache = {
 #         "cluster_coefficient": ox.clustering(graph)
 #     }
 
+def get_dead_ends(graph):
+    '''
+    Gibt für einen Graphen alle Knoten zurück, die nicht in der größten
+    starken Zusammenhangskomponente enthalten sind. Das sind die Knoten,
+    die keinen Pfad zu allen anderen Knoten haben oder die von denen man nicht
+    von der größten Komponente zurück kommt.
+
+    Bei uns kommt das öfters vor, wenn wir nur einen Ausschnitt des Graphen
+    anzeigen oder wegen des Reduktionsschritts von osmnx bzw. fehlerhaften
+    Daten.
+    '''
+    components = list(nx.strongly_connected_components(graph))
+
+    # Die Knoten der größten Komponente gehören nicht zu unserem Ergebnis
+    largest_component = max(components, key=len)
+    components.remove(largest_component)
+
+    return [node for component in components for node in component]
+
+
 @get("/api/shortest_path_info")
 def shortest_path_info():
     global graph_cache
@@ -51,21 +71,7 @@ def shortest_path_info():
     # ToDo: Bei allen Requests die Fehler im JS / HTML
     # auslesen und als Modal ausgeben, damit der Benutzer
     # weiß was schief gelaufen ist.
-
-    # find all nodes which don't have a shortest path to all other node
-    # and return them as array
-    nodes_without_shortest_path = []
-
-    for node in graph.nodes:
-        try:
-            res = nx.shortest_path_length(graph, node)
-
-            if len(res) != graph.number_of_nodes():
-                nodes_without_shortest_path.append(node)
-
-        except nx.NetworkXNoPath:
-            nodes_without_shortest_path.append(node)
-
+    nodes_without_shortest_path = get_dead_ends(graph)
 
     try:
         average_shortest_path_length = nx.average_shortest_path_length(graph)
@@ -97,6 +103,7 @@ def graph():
     east = request.query.east
     south = request.query.south
     west = request.query.west
+    filter_dead_ends = request.query.get_dead_ends == "true"
 
     oxg = ox.graph_from_bbox(north, south, east, west, network_type='drive')
 
@@ -143,6 +150,8 @@ def graph():
             str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "]"
         elif graph_type == "MultiDiGraph":
             str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "," + str(edge_id[2]) + "]"
+        else:
+            raise Exception("Invalid request type")
 
         obj = {}
 
@@ -165,15 +174,29 @@ def graph():
 
     degrees = oxg.degree()
 
+    # Alle Knoten bekommen ein Attribut "degree" mit der Anzahl der Kanten (Knotengrad)
+    for node_id in oxg.nodes:
+        nodes[node_id]["degree"] = degrees[node_id]
+
+    # Außerdem ein paar Grad-Statistiken für den Graphen
     max_degree = max(dict(degrees).values())
     avg_degree = sum(dict(degrees).values()) / num_nodes
     min_degree = min(dict(degrees).values())
 
-    graphkey = "graph" + north + "_" + east + "_" + south + "_" + west + "_" + graph_type
+    # Wir speichern einen Graph_Key für diesen Graphen
+    # damit dieser vom Client erneut referenziert werden kann
+    # und dann nicht neu berechnet werden muss.
+    # Potzentiell unsicher und ineffizient: Diese Anwendung sollte nur lokal verwendet
+    # werden, niemals über das Internet verfügbar sein. (DDOS, etc.)
+    graphkey = "graph" + north + "_" + east + "_" + south + "_" + west + "_" + graph_type + "_" + str(filter_dead_ends)
     graph_cache[graphkey] = oxg
+
+    if filter_dead_ends:
+        oxg.remove_nodes_from(filter_dead_ends(oxg))
 
     return {
         "graphkey": graphkey,
+        "filter_dead_ends": bool(filter_dead_ends),
         "graphType": graph_type,
         "nodes": nodes,
         "edges": edges,
