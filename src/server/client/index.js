@@ -192,6 +192,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
+    document.getElementById('load-node-data').addEventListener('change', function () {
+        if (document.getElementById('load-node-data').value === 'none') {
+            return;
+        }
+
+        if (!currentGraph) {
+            alert('No graph loaded');
+            return;
+        }
+
+        const graphkey = currentGraph.graphkey
+
+        var url = '/api/load_node_data?graphkey=' + graphkey + '&data_type=' + document.getElementById('load-node-data').value
+
+        // reset select box
+        document.getElementById('load-node-data').value = 'none';
+
+        axios.get(url)
+            .then(function (response) {
+                const data = response.data;
+
+                currentGraphOverlayAccess.updateNodeData(data.data)
+            })
+            .catch(function (error) {
+
+                console.log(error);
+                alert('Error loading node data');
+            });
+    });
+
     document.getElementById('clear-cookies-button').addEventListener('click', function () {
         Cookies.remove('last_saved_center_position');
         Cookies.remove('last_saved_zoom_level');

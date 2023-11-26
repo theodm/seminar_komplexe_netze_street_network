@@ -56,7 +56,7 @@ export function styleExpression() {
         'match',
         ['get', 'nodeStatus'],
         // ToDo: get colorOverlay ist blöd, aber der Support für variables ist nicht gut: https://github.com/openlayers/openlayers/issues/15146
-         'normal', ['match', ['get', 'colorOverlay'], 'none', ['match', ['get', 'nodeHighlight'], 'noPathToAllOther', nodeColorNoPathToAllOther, nodeColorNormal], 'degree', ['get', 'degreeColor'], '#0000ff'],
+         'normal', ['match', ['get', 'colorOverlay'], 'none', ['match', ['get', 'nodeHighlight'], 'noPathToAllOther', nodeColorNoPathToAllOther, nodeColorNormal], 'degree', ['get', 'degreeColor'], 'relativeBetweenness', ['get', 'rbcColor'], '#0000ff'],
         'nodeIsHovered', nodeColorHover,
         // ToDo: Das ist unschön aber mit dem palette-Operator hat es nicht funktioniert.
     

@@ -23,3 +23,17 @@ def colormap_for_range(upto: int, color_map="inferno"):
         colors.append(color_in_hex)
 
     return colors
+
+def colormap_for_float_range_fn(arr, color_map="inferno"):
+    cmap = matplotlib.cm.get_cmap(color_map)
+
+    _min = min(arr)
+    _max = max(arr)
+
+    def get_color_for_float(f):
+        color_in_floats_with_alpha = cmap((f - _min) / (_max - _min))
+        color_in_floats = color_in_floats_with_alpha[:3]
+        color_in_hex = matplotlib.colors.rgb2hex(color_in_floats)
+        return color_in_hex
+
+    return get_color_for_float

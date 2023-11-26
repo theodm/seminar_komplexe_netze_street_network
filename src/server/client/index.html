@@ -216,11 +216,19 @@
             <input type="button" name="load-graph-button" id="load-shortest-path-info-button"
                    value="Shortest Path Info (last)">
             <input type="button" name="load-graph-button" id="clear-cookies-button" value="Clear Cookies">
+            <label>node highlight</label>
             <select id="node-highlight" name="node-highlight">
                 <option value="none">none</option>
                 <option value="degree">degree</option>
+                <option value="relativeBetweenness">relative_betweenness (if loaded)</option>
 
             </select>
+            <label>load node data</label>
+            <select id="load-node-data" name="load-node-data">
+                <option value="none">none</option>
+                <option value="relative_betweenness">relative_betweenness</option>
+            </select>
+
 <!--                <option value="degree_in">degree_in</option>-->
 <!--                <option value="degree_out">degree_out</option>-->
 <!--                <option value="betweenness">betweenness</option>-->

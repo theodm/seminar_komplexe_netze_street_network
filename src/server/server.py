@@ -1,3 +1,6 @@
+import math
+
+import osmnx.plot
 from bottle import Bottle, run, request, response, static_file, route, get
 import osmnx as ox
 import networkx as nx
@@ -9,6 +12,7 @@ import io
 import base64
 
 from src.server.colormap.colormap import colormap_for_range
+from src.server.colormap.colormap import colormap_for_float_range_fn
 
 
 # Mit diesen Anweisungen werden alle Dateien im Ordner ./client
@@ -111,6 +115,46 @@ def get_graph_type_as_str(graph):
         return "MultiDiGraph"
     else:
         raise Exception("Invalid graph type")
+
+@get("/api/load_node_data")
+def load_node_data():
+    global graph_cache
+
+    data_type = request.query.data_type
+    graphkey = request.query.graphkey
+
+    if graphkey not in graph_cache:
+        raise Exception("Graph not found")
+
+    graph = graph_cache[graphkey]
+
+    if data_type == "relative_betweenness":
+        # ToDo: relative betweenness with travel time?
+        relative_betweenness_centrality = nx.betweenness_centrality(graph)
+
+        # Wir passen jeden Wert der relativen Betweenness Centrality für die
+        # Farbdarstellung logarithmisch an. Damit werden auch mittelmäßig wichtige
+        # Knoten noch farblich unterschieden von unbedeutenden.
+        def logify(x):
+            # log(x+1)
+            return math.log(100 * x + 1)
+        color_fn = colormap_for_float_range_fn([logify(rbc) for rbc in relative_betweenness_centrality.values()], "inferno")
+
+
+        result = { nodeId: {
+            "relative_betweenness_centrality": rbc,
+            "rbcColor": color_fn(logify(rbc))
+        } for nodeId, rbc in relative_betweenness_centrality.items() }
+
+        return {
+            "graphkey": graphkey,
+            "dataType": data_type,
+            "graphType": get_graph_type_as_str(graph),
+            "data": result
+        }
+    else:
+        raise Exception("Invalid data type")
+
 
 @get("/api/shortest_path_info")
 def shortest_path_info():

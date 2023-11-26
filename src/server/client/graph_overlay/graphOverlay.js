@@ -54,6 +54,8 @@ export function createGraphOverlay(
             "colorOverlay": document.getElementById('node-highlight').value,
             "degreeColor": node['degree_color'],
 
+            "rbc_color": '#000000',
+
             props: node,
 
         });
@@ -138,12 +140,29 @@ export function createGraphOverlay(
             map.removeLayer(vectorLayer);
         },
 
-        // none, degree
+        // none, degree, relative_betweenness
         setNodeColorOverlay(type) {
             for (const nodeId in nodes) {
                 nodes2feature[nodeId].set('colorOverlay', type);
             }
         },
+
+        /**
+         * Hier können den Knoten beliebige Properties hinzugefügt werden,
+         * diese werden sowohl dem Feature als auch den props hinzugefügt.
+         * @param data Map von NodeId zu Properties
+         */
+        updateNodeData(data) {
+            for (const nodeId in data) {
+                const feature = nodes2feature[nodeId];
+
+                for (const key in data[nodeId]) {
+                    feature.get('props')[key] = data[nodeId][key];
+                    feature.set(key, data[nodeId][key]);
+                }
+            }
+        },
+
 
         /**
          * Hier können die Nodes (=IDs) übergeben werden, die nicht zu allen Knoten
