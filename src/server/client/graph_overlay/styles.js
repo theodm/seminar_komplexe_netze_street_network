@@ -55,7 +55,8 @@ export function styleExpression() {
     const nodeColorExpression = [
         'match',
         ['get', 'nodeStatus'],
-        'normal', ['match', ['get', 'nodeHighlight'], 'noPathToAllOther', nodeColorNoPathToAllOther, nodeColorNormal],
+        // ToDo: get colorOverlay ist blöd, aber der Support für variables ist nicht gut: https://github.com/openlayers/openlayers/issues/15146
+         'normal', ['match', ['get', 'colorOverlay'], 'none', ['match', ['get', 'nodeHighlight'], 'noPathToAllOther', nodeColorNoPathToAllOther, nodeColorNormal], 'degree', ['get', 'degreeColor'], '#0000ff'],
         'nodeIsHovered', nodeColorHover,
         // ToDo: Das ist unschön aber mit dem palette-Operator hat es nicht funktioniert.
     
@@ -81,7 +82,7 @@ export function styleExpression() {
         'fill-color': '#ffffff19',
 
         'circle-radius': 6,
-        'circle-color': '#00000066',
+        'circle-fill-color': ifNodeExpression(nodeColorExpression, "#00000000"),
         'circle-stroke-color': ifNodeExpression(nodeColorExpression, "#00000000"),
         'circle-stroke-width': 1.25,
     }

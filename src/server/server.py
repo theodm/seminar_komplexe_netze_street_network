@@ -4,6 +4,11 @@ import networkx as nx
 from networkx.classes.reportviews import NodeView
 
 from graph.mdig_to_graph import mdig_to_graph
+import matplotlib.pyplot as plt
+import io
+import base64
+
+from src.server.colormap.colormap import colormap_for_range
 
 
 # Mit diesen Anweisungen werden alle Dateien im Ordner ./client
@@ -84,10 +89,7 @@ def degree_histogram():
 
     graph = graph_cache[graphkey]
 
-    import matplotlib.pyplot as plt
-    import io
-    import base64
-
+    plt.clf()
     degrees = [d for n, d in graph.degree()]
     plt.hist(degrees, bins=range(min(degrees), max(degrees) + 1, 1))
 
@@ -242,16 +244,33 @@ def graph():
     num_nodes = oxg.number_of_nodes()
     num_edges = oxg.number_of_edges()
 
+    # damit wir die Knoten nach Knotengrad einfärben können
+    # hier mit dem matplotlib colormap "inferno"
+    colors_for_degree = colormap_for_range(max(dict(oxg.degree()).values()) + 1, "inferno")
+
     degrees = oxg.degree()
+    if graph_type == "DiGraph" or graph_type == "MultiDiGraph":
+        out_degrees = oxg.out_degree()
+        in_degrees = oxg.in_degree()
 
     # Alle Knoten bekommen ein Attribut "degree" mit der Anzahl der Kanten (Knotengrad)
     for node_id in oxg.nodes:
         nodes[node_id]["degree"] = degrees[node_id]
+        nodes[node_id]["degree_color"] = colors_for_degree[degrees[node_id]]
+
+        if graph_type == "DiGraph" or graph_type == "MultiDiGraph":
+            nodes[node_id]["out_degree"] = out_degrees[node_id]
+            nodes[node_id]["in_degree"] = in_degrees[node_id]
 
     # Außerdem ein paar Grad-Statistiken für den Graphen
     max_degree = max(dict(degrees).values())
     avg_degree = sum(dict(degrees).values()) / num_nodes
     min_degree = min(dict(degrees).values())
+
+    if graph_type == "DiGraph" or graph_type == "MultiDiGraph":
+        max_degree = f"{max_degree} (out: {max(dict(out_degrees).values())}, in: {max(dict(in_degrees).values())})"
+        avg_degree = f"{avg_degree} (out: {sum(dict(out_degrees).values()) / num_nodes}, in: {sum(dict(in_degrees).values()) / num_nodes})"
+        min_degree = f"{min_degree} (out: {min(dict(out_degrees).values())}, in: {min(dict(in_degrees).values())})"
 
     global_cluster_coefficient_avg = '<multi graph>'
     if graph_type == "Graph" or graph_type == "DiGraph":

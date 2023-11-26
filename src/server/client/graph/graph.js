@@ -11,12 +11,12 @@
  *     // graphType= "MultiDiGraph" | "Graph"
  *     graphType: "MultiDiGraph" | "Graph";
  *     graphInfo: {
- *         numNodes: number;
- *         numEdges: number;
- *         maxDegree: number;
- *         avgDegree: number;
- *         minDegree: number;
- *         globalClusterCoefficientAvg: number;
+ *         numNodes: number | string;
+ *         numEdges: number | string;
+ *         maxDegree: number | string;
+ *         avgDegree: number | string;
+ *         minDegree: number | string;
+ *         globalClusterCoefficientAvg: number | string;
  *     };
  * }
  * 

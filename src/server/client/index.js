@@ -22,6 +22,15 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.set('fixed_tooltip', this.checked);
     });
 
+    // Die Select-Box, die den Graph-Typ angibt.
+    const graphType = getCookieOrDefault('graph_type', 'MultiDiGraph');
+
+    document.getElementById('graph-type').value = graphType;
+
+    document.getElementById('graph-type').addEventListener('change', function () {
+        Cookies.set('graph_type', this.value);
+    });
+
     // Die Checkbox, die angibt ob tote Knoten, von denen aus nicht alle anderen Knoten
     // erreicht werden können, angezeigt werden sollen.
     const filterDeadEnds = getCookieOrDefault('filter_dead_ends', false);
@@ -29,6 +38,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('filter-dead-ends').addEventListener('change', function () {
         Cookies.set('filter_dead_ends', this.checked);
+    });
+
+    // Wie sollen Nodes koloriert sein?
+    const nodeHighlight = getCookieOrDefault('node_highlight', 'none');
+    document.getElementById('node-highlight').value = nodeHighlight;
+
+    document.getElementById('node-highlight').addEventListener('change', function () {
+        Cookies.set('node_highlight', this.value);
     });
 
 
@@ -178,6 +195,17 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('clear-cookies-button').addEventListener('click', function () {
         Cookies.remove('last_saved_center_position');
         Cookies.remove('last_saved_zoom_level');
+        Cookies.remove('renderer');
+        Cookies.remove('fixed_tooltip');
+        Cookies.remove('filter_dead_ends');
+        Cookies.remove('node_highlight');
+        Cookies.remove('graph_type');
+    });
+
+    document.getElementById('node-highlight').addEventListener('change', function () {
+        if (currentGraphOverlayAccess) {
+            currentGraphOverlayAccess.setNodeColorOverlay(this.value);
+        }
     });
 
 

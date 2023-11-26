@@ -65,6 +65,7 @@
 
         #settings {
             padding: 10px;
+            max-width: 400px;
         }
 
         #settings h1 {
@@ -113,9 +114,6 @@
             max-height: 200px;
         }
 
-        #image-container {
-            max-width: 300px;
-        }
 
     </style>
 </head>
@@ -218,6 +216,21 @@
             <input type="button" name="load-graph-button" id="load-shortest-path-info-button"
                    value="Shortest Path Info (last)">
             <input type="button" name="load-graph-button" id="clear-cookies-button" value="Clear Cookies">
+            <select id="node-highlight" name="node-highlight">
+                <option value="none">none</option>
+                <option value="degree">degree</option>
+
+            </select>
+<!--                <option value="degree_in">degree_in</option>-->
+<!--                <option value="degree_out">degree_out</option>-->
+<!--                <option value="betweenness">betweenness</option>-->
+<!--                <option value="closeness">closeness</option>-->
+<!--                <option value="eigenvector">eigenvector</option>-->
+<!--                <option value="pagerank">pagerank</option>-->
+<!--                <option value="harmonic">harmonic</option>-->
+<!--                <option value="clustering">clustering</option>-->
+<!--                <option value="eccentricity">eccentricity</option>-->
+<!--                <option value="local_cluster_officient">local_cluster_officient</option>-->
 
         </div>
         <div id="image-container" class="settings-box">

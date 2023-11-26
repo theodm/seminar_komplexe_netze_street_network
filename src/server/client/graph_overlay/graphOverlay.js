@@ -51,6 +51,8 @@ export function createGraphOverlay(
             // Die Änderungen werden von den Style-Expressions ausgewertet
             "type": "node",
             "nodeStatus": "normal",
+            "colorOverlay": document.getElementById('node-highlight').value,
+            "degreeColor": node['degree_color'],
 
             props: node,
 
@@ -89,30 +91,39 @@ export function createGraphOverlay(
 
     const rendererSetting = document.getElementById('renderer').value;
 
+    const style = styleExpression();
+
+
     if (rendererSetting === 'webgl') {
         let webGlVectorLayer = new ol.layer.Layer({
             source: vectorSource,
-            style: styleExpression()
+            style: style
         });
 
         webGlVectorLayer.createRenderer = function () {
-            return new ol.renderer.webgl.VectorLayer(this, {
+            let webglVectorLayer = new ol.renderer.webgl.VectorLayer(this, {
                 source: vectorSource,
-                style: styleExpression()
+                style: style
             });
+
+            return webglVectorLayer;
         }
+
 
         map.addLayer(webGlVectorLayer);
     } else if (rendererSetting === 'vector') {
-        map.addLayer(new ol.layer.Vector({
+        let vectorLayer = new ol.layer.Vector({
             source: vectorSource,
-            style: styleExpression()
-        }));
+            style: style
+        });
+        map.addLayer(vectorLayer);
     } else if (rendererSetting === 'vectorImage') {
-        map.addLayer(new ol.layer.VectorImage({
+        let vectorImageLayer = new ol.layer.VectorImage({
             source: vectorSource,
-            style: styleExpression()
-        }));
+            style: style
+        });
+
+        map.addLayer(vectorImageLayer);
     } else {
         throw new Error('renderer not found');
     }
@@ -125,6 +136,13 @@ export function createGraphOverlay(
         remove: () => {
             removeHoverLogicFn();
             map.removeLayer(vectorLayer);
+        },
+
+        // none, degree
+        setNodeColorOverlay(type) {
+            for (const nodeId in nodes) {
+                nodes2feature[nodeId].set('colorOverlay', type);
+            }
         },
 
         /**
