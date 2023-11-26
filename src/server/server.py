@@ -13,6 +13,7 @@ import base64
 
 from src.server.colormap.colormap import colormap_for_range
 from src.server.colormap.colormap import colormap_for_float_range_fn
+from src.server.graph.redo_geometry import redo_geometry
 
 
 # Mit diesen Anweisungen werden alle Dateien im Ordner ./client
@@ -193,10 +194,41 @@ def shortest_path_info():
         "diameter": diameter,
     }
 
+def adjust_graph_edges_geometry(graph):
+    # osmnx vereinfacht die Daten aus OSM, dort gibt es auch für ein Straßensegment
+    # eigentlich mehrere Knoten. osmnx speichert bei der Vereinfachung aber die Koordinaten
+    # für alle vorher bestehenden Punkte um das Straßensegement beim Zeichnen nachzeichnen zu können.
+    # Das Attribut geometry gibt es jedoch nur bei Kanten, bei denen auch tatsächlich eine Vereinfachung
+    # stattgefunden hat.
+    # Wir vereinheitlichen und machen das auch überall dort, wo keine Vereinfachung notwendig war.
+    for edge in graph.edges:
+        edge_data = graph.edges[edge]
 
-# get route /api/graph with query parameter north, east, south...
-# which returns a json structure with properties nodes and edges
-# calculates route with osmnx and returns nodes and edges
+        if not "geometry" in edge_data:
+            edge_data["geometry"] = [(graph.nodes[edge[0]]['x'], graph.nodes[edge[0]]['y']), (graph.nodes[edge[1]]['x'], graph.nodes[edge[1]]['y'])]
+
+
+    for edge in graph.edges:
+        edge_data = graph.edges[edge]
+
+        if "done" in edge_data:
+            continue
+
+        if (edge[1], edge[0], edge[2]) in graph.edges:
+            other = graph.edges[(edge[1], edge[0], edge[2])]
+
+            geometry = edge_data["geometry"] if isinstance(edge_data["geometry"], list) else list(edge_data["geometry"].coords)
+            geometry = redo_geometry(geometry, 0.00001)
+            edge_data["geometry"] = geometry
+            edge_data["done"] = True
+
+            geometry_other = other["geometry"] if isinstance(other["geometry"], list) else list(other["geometry"].coords)
+            geometry_other = redo_geometry(geometry_other, 0.00001)
+            other["geometry"] = geometry_other
+            other["done"] = True
+
+    return
+
 @get('/api/graph')
 def graph():
     global graph_cache
@@ -206,12 +238,16 @@ def graph():
     south = request.query.south
     west = request.query.west
     _filter_dead_ends = request.query.filter_dead_ends == "true"
+    _redo_geometry = request.query.redo_geometry == "true"
 
     oxg = ox.graph_from_bbox(north, south, east, west, network_type='drive')
 
-
     # request type can be Graph or MultiDiGraph
     graph_type = request.query.type
+
+    if (graph_type == "DiGraph" or graph_type == "MultiDiGraph") and _redo_geometry:
+        adjust_graph_edges_geometry(oxg)
+
     if graph_type == "Graph":
         oxg = mdig_to_graph(oxg)
     elif graph_type == "DiGraph":
@@ -222,6 +258,7 @@ def graph():
         pass
     else:
         raise Exception("Invalid request type")
+
 
     nodes = {}
 
@@ -248,6 +285,7 @@ def graph():
 
         return obj
 
+
     for node_id in oxg.nodes:
         oxnode: NodeView = oxg.nodes[node_id]
 
@@ -272,8 +310,8 @@ def graph():
         obj = {}
 
         for key, value in oxedge.items():
-            # convert LINESTRING to list of coordinates
-            if key == "geometry":
+            # bei adjust_graph_edges_geometry() wird geometry zum Teil zu einer Liste
+            if key == "geometry" and not isinstance(value, list):
                 obj[key] = list(value.coords)
             else:
                 obj[key] = value
@@ -330,13 +368,14 @@ def graph():
     # und dann nicht neu berechnet werden muss.
     # Potzentiell unsicher und ineffizient: Diese Anwendung sollte nur lokal verwendet
     # werden, niemals über das Internet verfügbar sein. (DDOS, etc.)
-    graphkey = "graph" + north + "_" + east + "_" + south + "_" + west + "_" + graph_type + "_" + str(_filter_dead_ends)
+    graphkey = "graph" + north + "_" + east + "_" + south + "_" + west + "_" + graph_type + "_" + str(_filter_dead_ends) + "_" + str(_redo_geometry)
     graph_cache[graphkey] = oxg
 
 
     return {
         "graphkey": graphkey,
         "filter_dead_ends": bool(_filter_dead_ends),
+        "redo_geometry": bool(_redo_geometry),
         "graphType": graph_type,
         "nodes": nodes,
         "edges": edges,

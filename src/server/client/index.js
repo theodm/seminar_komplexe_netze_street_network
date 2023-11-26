@@ -48,6 +48,14 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.set('node_highlight', this.value);
     });
 
+    // Geometry der Kanten verbessern (Beide Kantenrichtungen anzeigen)?
+    const redoGeometry = getCookieOrDefault('redo_geometry', false);
+    document.getElementById('redo-geometry').checked = redoGeometry;
+
+    document.getElementById('redo-geometry').addEventListener('change', function () {
+        Cookies.set('redo_geometry', this.checked);
+    });
+
 
     var map = new ol.Map({
         renderer: 'webgl',
@@ -125,7 +133,8 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('graphType: ' + graphType)
 
         let filterDeadEnds = document.getElementById('filter-dead-ends').checked;
-        const url = '/api/graph?north=' + extent[0] + '&east=' + extent[1] + '&south=' + extent[2] + '&west=' + extent[3] + '&type=' + graphType + '&filter_dead_ends=' + filterDeadEnds
+        let redoGeometry = document.getElementById('redo-geometry').checked;
+        const url = '/api/graph?north=' + extent[0] + '&east=' + extent[1] + '&south=' + extent[2] + '&west=' + extent[3] + '&type=' + graphType + '&filter_dead_ends=' + filterDeadEnds + '&redo_geometry=' + redoGeometry;
 
         axios.get(url)
             .then(function (response) {
@@ -230,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.remove('filter_dead_ends');
         Cookies.remove('node_highlight');
         Cookies.remove('graph_type');
+        Cookies.remove('redo_geometry');
     });
 
     document.getElementById('node-highlight').addEventListener('change', function () {

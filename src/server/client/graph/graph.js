@@ -10,6 +10,7 @@
  *     edges: { [eid: string]: Edge }};
  *     // graphType= "MultiDiGraph" | "Graph"
  *     graphType: "MultiDiGraph" | "Graph";
+ *     redo_geometry: boolean;
  *     graphInfo: {
  *         numNodes: number | string;
  *         numEdges: number | string;
@@ -90,7 +91,7 @@ export function isNode(obj) {
  * @param {number} nodeId 
  * @returns 
  */
-export function findEdgeIdsForNodeWithType(graph, nodeId) {
+export function findEdgeIdsForNodeWithType(graph, nodeId, redoGeometry) {
     const nodes = graph.nodes;
     const edges = graph.edges;
 
@@ -106,7 +107,9 @@ export function findEdgeIdsForNodeWithType(graph, nodeId) {
             }
             // Ausgehende Kante
             result[eid] = "source";
-            if (!edge.oneway) {
+            if (!edge.oneway && !redoGeometry) {
+                // Bei redoGeometry verwenden wir kein both,
+                // da wird ja sowieso beide Kantenrichtungen anzeigen
                 result[eid] = "both";
             }
 
@@ -119,7 +122,9 @@ export function findEdgeIdsForNodeWithType(graph, nodeId) {
 
             // Eingehende Kante
             result[eid] = "target";
-            if (!edge.oneway) {
+            if (!edge.oneway && !redoGeometry) {
+                // Bei redoGeometry verwenden wir kein both,
+                // da wird ja sowieso beide Kantenrichtungen anzeigen
                 result[eid] = "both";
             }
         }

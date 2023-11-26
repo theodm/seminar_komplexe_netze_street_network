@@ -14,6 +14,8 @@ export function createHoverLogicForGraphOverlay(
     const nodes = graph.nodes;
     const edges = graph.edges;
 
+    const redoGeometry = graph.redo_geometry
+
     // Unser Tooltip im HTML
     const info = document.getElementById('info');
 
@@ -84,7 +86,7 @@ export function createHoverLogicForGraphOverlay(
                 }
 
                 // Highlight Edges
-                const edgesToColor = findEdgeIdsForNodeWithType(graph, nodeId);
+                const edgesToColor = findEdgeIdsForNodeWithType(graph, nodeId, redoGeometry);
 
                 // iterate key, value in edgesToColor
                 for (const [edgeId, type] of Object.entries(edgesToColor)) {
