@@ -33,7 +33,7 @@ const edgeColorHighlightBoth = '#dc2626';
  * https://github.com/openlayers/openlayers/blob/28c4728b620d0a44bd61a33fc28f726b2efdf650/src/ol/expr/expression.js
  * https://github.com/openlayers/openlayers/blob/main/src/ol/style/webgl.js
  */
-export function styleExpression() {
+export function styleExpression(nodeSize = 5) {
 
     const ifEdgeExpression = (expr, defaultValue) => {
         return ['match', ['get', 'type'], 'edge', expr, defaultValue]
@@ -45,10 +45,10 @@ export function styleExpression() {
 
     const edgeColorExpression = [
         'match',
-        ['get', 'edgeStatus'], 
+        ['get', 'edgeStatus'],
         'normal', ['match', ['get', 'colorOverlay'], 'none', edgeColorNormal, 'relativeBetweennessEdge', ['get', 'rbcEdgeColor'], '#0000ff'],
         'edgeIsHovered', edgeColorHovered,
-        'nodeIsHovered_EdgeNeighbor', ['match', ['get', 'neighborHoveredEdgeColor'], 'source', edgeColorHighlightSource, 'target', edgeColorHighlightTarget, edgeColorHighlightBoth],            
+        'nodeIsHovered_EdgeNeighbor', ['match', ['get', 'neighborHoveredEdgeColor'], 'source', edgeColorHighlightSource, 'target', edgeColorHighlightTarget, edgeColorHighlightBoth],
         '#FF0000'
     ]
 
@@ -56,17 +56,17 @@ export function styleExpression() {
         'match',
         ['get', 'nodeStatus'],
         // ToDo: get colorOverlay ist blöd, aber der Support für variables ist nicht gut: https://github.com/openlayers/openlayers/issues/15146
-         'normal', ['match', ['get', 'colorOverlay'], 'none', ['match', ['get', 'nodeHighlight'], 'noPathToAllOther', nodeColorNoPathToAllOther, nodeColorNormal], 'degree', ['get', 'degreeColor'], 'relativeBetweenness', ['get', 'rbcColor'], '#0000ff'],
+        'normal', ['match', ['get', 'colorOverlay'], 'none', ['match', ['get', 'nodeHighlight'], 'noPathToAllOther', nodeColorNoPathToAllOther, nodeColorNormal], 'degree', ['get', 'degreeColor'], 'relativeBetweenness', ['get', 'rbcColor'], '#0000ff'],
         'nodeIsHovered', nodeColorHover,
         // ToDo: Das ist unschön aber mit dem palette-Operator hat es nicht funktioniert.
-    
-        'nodeIsHovered_NodeNeighbor', ['match', ['get', 'neighborHoveredNodeColor'], 
-            '0', colorsForNeighbourNodes[0], 
-            '1', colorsForNeighbourNodes[1], 
-            '2', colorsForNeighbourNodes[2], 
-            '3', colorsForNeighbourNodes[3], 
-            '4', colorsForNeighbourNodes[4], 
-            '5', colorsForNeighbourNodes[5], 
+
+        'nodeIsHovered_NodeNeighbor', ['match', ['get', 'neighborHoveredNodeColor'],
+            '0', colorsForNeighbourNodes[0],
+            '1', colorsForNeighbourNodes[1],
+            '2', colorsForNeighbourNodes[2],
+            '3', colorsForNeighbourNodes[3],
+            '4', colorsForNeighbourNodes[4],
+            '5', colorsForNeighbourNodes[5],
             '6', colorsForNeighbourNodes[6],
             '7', colorsForNeighbourNodes[7],
             '8', colorsForNeighbourNodes[8],
@@ -81,7 +81,7 @@ export function styleExpression() {
         'stroke-width': 3,
         'fill-color': '#ffffff19',
 
-        'circle-radius': 6,
+        'circle-radius': nodeSize,
         'circle-fill-color': ifNodeExpression(nodeColorExpression, "#00000000"),
         'circle-stroke-color': ifNodeExpression(nodeColorExpression, "#00000000"),
         'circle-stroke-width': 1.25,

@@ -64,6 +64,13 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.set('redo_geometry', this.checked);
     });
 
+    // Größe der Knoten
+    const nodeSize = getCookieOrDefault('node_size', 6);
+    document.getElementById('node-size').value = nodeSize;
+
+    document.getElementById('node-size').addEventListener('change', function () {
+        Cookies.set('node_size', this.value);
+    });
 
     var map = new ol.Map({
         renderer: 'webgl',
@@ -251,6 +258,13 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.remove('graph_type');
         Cookies.remove('redo_geometry');
         Cookies.remove('edge_highlight');
+        Cookies.remove('node_size');
+    });
+
+    document.getElementById('node-size').addEventListener('change', function () {
+        if (currentGraphOverlayAccess) {
+            currentGraphOverlayAccess.setNodeSize(parseInt(this.value));
+        }
     });
 
     document.getElementById('node-highlight').addEventListener('change', function () {

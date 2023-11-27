@@ -94,8 +94,7 @@ export function createGraphOverlay(
 
     const rendererSetting = document.getElementById('renderer').value;
 
-    const style = styleExpression();
-
+    const style = styleExpression(parseInt(document.getElementById('node-size').value));
 
     if (rendererSetting === 'webgl') {
         let webGlVectorLayer = new ol.layer.Layer({
@@ -152,6 +151,16 @@ export function createGraphOverlay(
             for (const edgeId in edges) {
                 edges2feature[edgeId].set('colorOverlay', type);
             }
+        },
+
+        setNodeSize(size) {
+            // if vectorLayer has property setStyle then use it else not
+            if (vectorLayer.setStyle) {
+                vectorLayer.setStyle(styleExpression(size));
+            } else {
+                alert("cannot dynamically change size of webgl :(")
+            }
+
         },
 
         /**
