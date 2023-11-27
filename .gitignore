@@ -29,3 +29,5 @@
 /src/data/file.graphml
 /src/data/supplementary.txt
 /src/server/cache/
+
+__pycache__
