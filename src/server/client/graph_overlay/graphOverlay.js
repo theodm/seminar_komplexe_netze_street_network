@@ -83,6 +83,7 @@ export function createGraphOverlay(
             // Die Änderungen werden von den Style-Expressions ausgewertet
             "type": "edge",
             "edgeStatus": "normal",
+            "colorOverlay": document.getElementById('edge-highlight').value,
 
             props: edge
         });
@@ -147,18 +148,42 @@ export function createGraphOverlay(
             }
         },
 
+        setEdgeColorOverlay(type) {
+            for (const edgeId in edges) {
+                edges2feature[edgeId].set('colorOverlay', type);
+            }
+        },
+
         /**
-         * Hier können den Knoten beliebige Properties hinzugefügt werden,
+         * Hier können den Knoten und Kanten beliebige Properties hinzugefügt werden,
          * diese werden sowohl dem Feature als auch den props hinzugefügt.
-         * @param data Map von NodeId zu Properties
+         * @param nodeData Map von NodeId zu Properties oder undefined
+         * @param edgeData Map von NodeId zu Properties oder undefined
          */
-        updateNodeData(data) {
-            for (const nodeId in data) {
+        updateData(nodeData, edgeData) {
+            if (!nodeData) {
+                nodeData = {};
+            }
+
+            if (!edgeData) {
+                edgeData = {};
+            }
+
+            for (const nodeId in nodeData) {
                 const feature = nodes2feature[nodeId];
 
-                for (const key in data[nodeId]) {
-                    feature.get('props')[key] = data[nodeId][key];
-                    feature.set(key, data[nodeId][key]);
+                for (const key in nodeData[nodeId]) {
+                    feature.get('props')[key] = nodeData[nodeId][key];
+                    feature.set(key, nodeData[nodeId][key]);
+                }
+            }
+
+            for (const edgeId in edgeData) {
+                const feature = edges2feature[edgeId];
+
+                for (const key in edgeData[edgeId]) {
+                    feature.get('props')[key] = edgeData[edgeId][key];
+                    feature.set(key, edgeData[edgeId][key]);
                 }
             }
         },

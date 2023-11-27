@@ -46,7 +46,7 @@ export function styleExpression() {
     const edgeColorExpression = [
         'match',
         ['get', 'edgeStatus'], 
-        'normal', edgeColorNormal,
+        'normal', ['match', ['get', 'colorOverlay'], 'none', edgeColorNormal, 'relativeBetweennessEdge', ['get', 'rbcEdgeColor'], '#0000ff'],
         'edgeIsHovered', edgeColorHovered,
         'nodeIsHovered_EdgeNeighbor', ['match', ['get', 'neighborHoveredEdgeColor'], 'source', edgeColorHighlightSource, 'target', edgeColorHighlightTarget, edgeColorHighlightBoth],            
         '#FF0000'

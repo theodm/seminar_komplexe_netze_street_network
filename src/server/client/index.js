@@ -48,6 +48,14 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.set('node_highlight', this.value);
     });
 
+    // Wie sollen Edges koloriert sein?
+    const edgeHighlight = getCookieOrDefault('edge_highlight', 'none');
+    document.getElementById('edge-highlight').value = edgeHighlight;
+
+    document.getElementById('edge-highlight').addEventListener('change', function () {
+        Cookies.set('edge_highlight', this.value);
+    });
+
     // Geometry der Kanten verbessern (Beide Kantenrichtungen anzeigen)?
     const redoGeometry = getCookieOrDefault('redo_geometry', false);
     document.getElementById('redo-geometry').checked = redoGeometry;
@@ -201,8 +209,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
-    document.getElementById('load-node-data').addEventListener('change', function () {
-        if (document.getElementById('load-node-data').value === 'none') {
+    document.getElementById('load-additional-data').addEventListener('change', function () {
+        if (document.getElementById('load-additional-data').value === 'none') {
             return;
         }
 
@@ -213,21 +221,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const graphkey = currentGraph.graphkey
 
-        var url = '/api/load_node_data?graphkey=' + graphkey + '&data_type=' + document.getElementById('load-node-data').value
+        var url = '/api/load_additional_data?graphkey=' + graphkey + '&data_type=' + document.getElementById('load-additional-data').value
 
         // reset select box
-        document.getElementById('load-node-data').value = 'none';
+        document.getElementById('load-additional-data').value = 'none';
 
         axios.get(url)
             .then(function (response) {
                 const data = response.data;
 
-                currentGraphOverlayAccess.updateNodeData(data.data)
+                const nodeData = data.node_data;
+                const edgeData = data.edge_data;
+
+                currentGraphOverlayAccess.updateData(nodeData, edgeData)
             })
             .catch(function (error) {
-
                 console.log(error);
-                alert('Error loading node data');
+                alert('Error loading additional data');
             });
     });
 
@@ -240,11 +250,18 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.remove('node_highlight');
         Cookies.remove('graph_type');
         Cookies.remove('redo_geometry');
+        Cookies.remove('edge_highlight');
     });
 
     document.getElementById('node-highlight').addEventListener('change', function () {
         if (currentGraphOverlayAccess) {
             currentGraphOverlayAccess.setNodeColorOverlay(this.value);
+        }
+    });
+
+    document.getElementById('edge-highlight').addEventListener('change', function () {
+        if (currentGraphOverlayAccess) {
+            currentGraphOverlayAccess.setEdgeColorOverlay(this.value);
         }
     });
 

@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 import io
 import base64
 
-from src.server.colormap.colormap import colormap_for_range
-from src.server.colormap.colormap import colormap_for_float_range_fn
-from src.server.graph.redo_geometry import redo_geometry
+from colormap.colormap import colormap_for_range
+from colormap.colormap import colormap_for_float_range_fn
+from graph.redo_geometry import redo_geometry
 
 
 # Mit diesen Anweisungen werden alle Dateien im Ordner ./client
@@ -32,6 +32,18 @@ graph_cache = {
 
 }
 
+def server_edge_id_to_client_edge_id(graph, edge_id):
+    if isinstance(graph, nx.Graph):
+        return "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "]"
+    elif isinstance(graph, nx.MultiGraph):
+        return "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "," + str(edge_id[2]) + "]"
+    elif isinstance(graph, nx.DiGraph):
+        return "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "]"
+    elif isinstance(graph, nx.MultiDiGraph):
+        return "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "," + str(edge_id[2]) + "]"
+    else:
+        raise Exception("Invalid graph type")
+    
 
 
 # @get("/api/node_info_")
@@ -117,8 +129,9 @@ def get_graph_type_as_str(graph):
     else:
         raise Exception("Invalid graph type")
 
-@get("/api/load_node_data")
-def load_node_data():
+
+@get("/api/load_additional_data")
+def load_additional_data():
     global graph_cache
 
     data_type = request.query.data_type
@@ -151,8 +164,35 @@ def load_node_data():
             "graphkey": graphkey,
             "dataType": data_type,
             "graphType": get_graph_type_as_str(graph),
-            "data": result
+            "node_data": result,
+            "edge_data": None
         }
+    elif data_type == "relative_betweenness_edge":
+        relative_betweenness_centrality = nx.edge_betweenness_centrality(graph)
+
+        # Wir passen jeden Wert der relativen Betweenness Centrality für die
+        # Farbdarstellung logarithmisch an. Damit werden auch mittelmäßig wichtige
+        # Kanten noch farblich unterschieden von unbedeutenden.
+        def logify(x):
+            # log(x+1)
+            return math.log(100 * x + 1)
+        
+        color_fn = colormap_for_float_range_fn([logify(rbc) for rbc in relative_betweenness_centrality.values()], "inferno")
+
+        result = { server_edge_id_to_client_edge_id(graph, edgeId): {
+            "relative_betweenness_centrality_edge": rbc,
+            "rbcEdgeColor": color_fn(logify(rbc))
+        } for edgeId, rbc in relative_betweenness_centrality.items() }
+
+        return {
+            "graphkey": graphkey,
+            "dataType": data_type,
+            "graphType": get_graph_type_as_str(graph),
+            "node_data": None,
+            "edge_data": result
+        }
+
+
     else:
         raise Exception("Invalid data type")
 
@@ -296,16 +336,7 @@ def graph():
     for edge_id in oxg.edges:
         oxedge = oxg.edges[edge_id]
 
-        if graph_type == "Graph":
-            str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "]"
-        elif graph_type == "DiGraph":
-            str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "]"
-        elif graph_type == "MultiGraph":
-            str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "," + str(edge_id[2]) + "]"
-        elif graph_type == "MultiDiGraph":
-            str_edge_id = "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "," + str(edge_id[2]) + "]"
-        else:
-            raise Exception("Invalid request type")
+        str_edge_id = server_edge_id_to_client_edge_id(oxg, edge_id)
 
         obj = {}
 
