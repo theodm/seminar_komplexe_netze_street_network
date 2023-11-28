@@ -30,6 +30,7 @@ def dual_graph_to_nxgraph(d_graph: DualGraph):
 
     return nxgraph
 
+
 def plot_with_degree(oxg: nx.MultiDiGraph, min_angle: int = 90, min_degree: int = 0):
     # Calculate primal graph
     p_graph = from_osmnx(oxg=oxg, use_label=True)

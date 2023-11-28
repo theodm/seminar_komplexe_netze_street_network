@@ -23,6 +23,74 @@ const edgeColorHighlightSource = '#f59e0b';
 const edgeColorHighlightTarget = '#1e293b';
 const edgeColorHighlightBoth = '#dc2626';
 
+export function update() {
+
+}
+
+export function nodeColorFunction(nodeFeature) {
+    switch (nodeFeature.get("nodeStatus")) {
+        case 'normal':
+            switch (nodeFeature.get("colorOverlay")) {
+                case 'none':
+                    return nodeColorNormal;
+                case 'degree':
+                    return nodeFeature.get("degreeColor");
+                case 'relativeBetweenness':
+                    return nodeFeature.get("rbcColor");
+            }
+            return nodeColorNormal;
+        case 'nodeIsHovered':
+            return nodeColorHover;
+        case 'nodeIsHovered_NodeNeighbor':
+            return colorsForNeighbourNodes[nodeFeature.get("neighborHoveredNodeColor")];
+        case 'edgeIsHovered_NodeNeighbor':
+            return nodeColorHover;
+
+        case 'noPathToAllOther':
+            return nodeColorNoPathToAllOther;
+    }
+
+    throw new Error("nodeStatus " + nodeFeature.get("nodeStatus") + "not found");
+}
+
+export function edgeColorFunction(edgeFeature) {
+    switch (edgeFeature.get("edgeStatus")) {
+        case 'normal':
+            switch (edgeFeature.get("colorOverlay")) {
+                case 'none':
+                    return edgeColorNormal;
+                case 'degree':
+                    return edgeFeature.get("degreeColor");
+                case 'relativeBetweennessEdge':
+                    return edgeFeature.get("rbcEdgeColor");
+                case 'dualNodeDegree':
+                    return edgeFeature.get("dualNodeDegreeColor");
+            }
+            return edgeColorNormal;
+        case 'edgeIsHovered':
+            return edgeColorHovered;
+        case 'nodeIsHovered_EdgeNeighbor':
+            switch (edgeFeature.get("neighborHoveredEdgeColor")) {
+                case 'source':
+                    return edgeColorHighlightSource;
+                case 'target':
+                    return edgeColorHighlightTarget;
+                case 'both':
+                    return edgeColorHighlightBoth;
+            }
+
+    }
+
+    throw new Error("edgeStatus not found");
+}
+
+export function updateFeature(feature) {
+    if (feature.get("type") === "node")
+        feature.set("nodeColor", nodeColorFunction(feature));
+    else
+        feature.set("edgeColor", edgeColorFunction(feature));
+}
+
 /**
  * Wir verwenden hier Style-Expressions, da diese von allen verwendeten 
  * Renderern unterstützt wird. Das ist eine spezielle Art von Programmiersprache,
@@ -44,36 +112,13 @@ export function styleExpression(nodeSize = 5) {
     }
 
     const edgeColorExpression = [
-        'match',
-        ['get', 'edgeStatus'],
-        'normal', ['match', ['get', 'colorOverlay'], 'none', edgeColorNormal, 'relativeBetweennessEdge', ['get', 'rbcEdgeColor'], '#0000ff'],
-        'edgeIsHovered', edgeColorHovered,
-        'nodeIsHovered_EdgeNeighbor', ['match', ['get', 'neighborHoveredEdgeColor'], 'source', edgeColorHighlightSource, 'target', edgeColorHighlightTarget, edgeColorHighlightBoth],
-        '#FF0000'
+        'get',
+        'edgeColor'
     ]
 
     const nodeColorExpression = [
-        'match',
-        ['get', 'nodeStatus'],
-        // ToDo: get colorOverlay ist blöd, aber der Support für variables ist nicht gut: https://github.com/openlayers/openlayers/issues/15146
-        'normal', ['match', ['get', 'colorOverlay'], 'none', ['match', ['get', 'nodeHighlight'], 'noPathToAllOther', nodeColorNoPathToAllOther, nodeColorNormal], 'degree', ['get', 'degreeColor'], 'relativeBetweenness', ['get', 'rbcColor'], '#0000ff'],
-        'nodeIsHovered', nodeColorHover,
-        // ToDo: Das ist unschön aber mit dem palette-Operator hat es nicht funktioniert.
-
-        'nodeIsHovered_NodeNeighbor', ['match', ['get', 'neighborHoveredNodeColor'],
-            '0', colorsForNeighbourNodes[0],
-            '1', colorsForNeighbourNodes[1],
-            '2', colorsForNeighbourNodes[2],
-            '3', colorsForNeighbourNodes[3],
-            '4', colorsForNeighbourNodes[4],
-            '5', colorsForNeighbourNodes[5],
-            '6', colorsForNeighbourNodes[6],
-            '7', colorsForNeighbourNodes[7],
-            '8', colorsForNeighbourNodes[8],
-            "#ffffff"
-        ],
-        'edgeIsHovered_NodeNeighbor', nodeColorHover,
-        '#00000000'
+        'get',
+        'nodeColor'
     ]
 
     const styleExpression = {

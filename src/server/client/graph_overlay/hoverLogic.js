@@ -1,4 +1,4 @@
-import { colorsForNeighbourNodes } from './styles.js';
+import {colorsForNeighbourNodes, updateFeature} from './styles.js';
 import { findEdgeIdsForNodeWithType } from '../graph/graph.js';
 import { isNode } from '../graph/graph.js';
 import { getContentsOfTooltip } from './tooltip.js';
@@ -30,10 +30,12 @@ export function createHoverLogicForGraphOverlay(
     function resetStylesForHoveredElements() {
         for (let nodeId of hoveredNodes) {
             nodes2feature[nodeId].set('nodeStatus', 'normal');
+            updateFeature(nodes2feature[nodeId])
         }
 
         for (let edgeId of hoveredEdges) {
             edges2feature[edgeId].set('edgeStatus', 'normal');
+            updateFeature(edges2feature[edgeId])
         }
 
         hoveredNodes = [];
@@ -74,6 +76,7 @@ export function createHoverLogicForGraphOverlay(
                 // Highlight base Node
                 hoveredNodes.push(nodeId);
                 nodes2feature[nodeId].set('nodeStatus', 'nodeIsHovered');
+                updateFeature(nodes2feature[nodeId])
 
                 // Highlight neighbors 
                 const neighbors = node.neighbors;
@@ -81,6 +84,7 @@ export function createHoverLogicForGraphOverlay(
                     const neighborId = neighbors[i].id;
                     nodes2feature[neighborId].set('nodeStatus', 'nodeIsHovered_NodeNeighbor');
                     nodes2feature[neighborId].set('neighborHoveredNodeColor', ( i % colorsForNeighbourNodes.length ) + "");
+                    updateFeature(nodes2feature[neighborId])
 
                     hoveredNodes.push(neighborId);
                 }
@@ -94,6 +98,7 @@ export function createHoverLogicForGraphOverlay(
 
                     edges2feature[edgeId].set('edgeStatus', 'nodeIsHovered_EdgeNeighbor');
                     edges2feature[edgeId].set('neighborHoveredEdgeColor', type);
+                    updateFeature(edges2feature[edgeId])
                 }
             } else {
                 const edge = obj;
@@ -102,10 +107,14 @@ export function createHoverLogicForGraphOverlay(
                 // highlight edge
                 edges2feature[edgeId].set('edgeStatus', 'edgeIsHovered');
                 hoveredEdges.push(edgeId);
+                updateFeature(edges2feature[edgeId])
 
                 // highlight source and target node
                 nodes2feature[obj.source.id].set('nodeStatus', 'edgeIsHovered_NodeNeighbor');
                 nodes2feature[obj.target.id].set('nodeStatus', 'edgeIsHovered_NodeNeighbor');
+
+                updateFeature(nodes2feature[obj.source.id])
+                updateFeature(nodes2feature[obj.target.id])
 
                 hoveredNodes.push(obj.source.id);
                 hoveredNodes.push(obj.target.id);

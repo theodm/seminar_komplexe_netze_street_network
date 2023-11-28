@@ -14,6 +14,7 @@ import base64
 from colormap.colormap import colormap_for_range
 from colormap.colormap import colormap_for_float_range_fn
 from graph.redo_geometry import redo_geometry
+from src.server.graph.nx_to_dual_graph import osmnx_to_dual_graph
 
 
 # Mit diesen Anweisungen werden alle Dateien im Ordner ./client
@@ -191,6 +192,46 @@ def load_additional_data():
             "node_data": None,
             "edge_data": result
         }
+    elif data_type == "dual_graph_base":
+        dg = osmnx_to_dual_graph(graph)
+
+        edge_data = {}
+
+        for edge in graph.edges:
+
+            if not "dual_node_neighbors" in graph.edges[edge]:
+                print("No dual_node_neighbors for edge " + str(edge))
+
+                edge_data[server_edge_id_to_client_edge_id(graph, edge)] = {
+                    "dual_edge_degree": 0,
+                    "dualEdgeDegreeColor": "#000000",
+                    "dual_original_edges": [],
+                    "dual_original_names": [],
+                    "dual_node_neighbors": []
+                }
+            else:
+                dual_node_neighbors_mapped = []
+                for i in graph.edges[edge]["dual_node_neighbors"]:
+                    print(i)
+                    dual_node_neighbors_mapped.append([server_edge_id_to_client_edge_id(graph, j) for j in i])
+
+
+                edge_data[server_edge_id_to_client_edge_id(graph, edge)] = {
+                    "dual_node_degree": graph.edges[edge]["dual_node_degree"],
+                    "dualNodeDegreeColor": graph.edges[edge]["dual_node_degree_color"],
+                    "dual_original_edges": [server_edge_id_to_client_edge_id(graph, org) for org in graph.edges[edge]["dual_original_edges"]],
+                    "dual_original_names": graph.edges[edge]["dual_original_names"],
+                    "dual_node_neighbors": dual_node_neighbors_mapped
+                }
+
+        return {
+            "graphkey": graphkey,
+            "dataType": data_type,
+            "graphType": get_graph_type_as_str(graph),
+            "node_data": None,
+            "edge_data": edge_data
+        }
+
 
 
     else:

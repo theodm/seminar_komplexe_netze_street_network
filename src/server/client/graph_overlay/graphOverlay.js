@@ -1,4 +1,4 @@
-import {styleExpression} from './styles.js';
+import {styleExpression, updateFeature} from './styles.js';
 import {edgeGetGeometry, isNode} from '../graph/graph.js';
 import {createHoverLogicForGraphOverlay} from './hoverLogic.js';
 
@@ -92,6 +92,10 @@ export function createGraphOverlay(
         edges2feature[edge.id] = feature;
     }
 
+    for (const feature of vectorSource.getFeatures()) {
+        updateFeature(feature);
+    }
+
     const rendererSetting = document.getElementById('renderer').value;
 
     const style = styleExpression(parseInt(document.getElementById('node-size').value));
@@ -144,12 +148,14 @@ export function createGraphOverlay(
         setNodeColorOverlay(type) {
             for (const nodeId in nodes) {
                 nodes2feature[nodeId].set('colorOverlay', type);
+                updateFeature(nodes2feature[nodeId]);
             }
         },
 
         setEdgeColorOverlay(type) {
             for (const edgeId in edges) {
                 edges2feature[edgeId].set('colorOverlay', type);
+                updateFeature(edges2feature[edgeId]);
             }
         },
 
@@ -184,6 +190,7 @@ export function createGraphOverlay(
                 for (const key in nodeData[nodeId]) {
                     feature.get('props')[key] = nodeData[nodeId][key];
                     feature.set(key, nodeData[nodeId][key]);
+                    updateFeature(feature)
                 }
             }
 
@@ -193,6 +200,7 @@ export function createGraphOverlay(
                 for (const key in edgeData[edgeId]) {
                     feature.get('props')[key] = edgeData[edgeId][key];
                     feature.set(key, edgeData[edgeId][key]);
+                    updateFeature(feature)
                 }
             }
         },
@@ -206,6 +214,7 @@ export function createGraphOverlay(
         setNodesNoPathToAllNodes(nodesNoPathToAllNodes) {
             for (const nodeId of nodesNoPathToAllNodes) {
                 nodes2feature[nodeId].set('nodeHighlight', 'noPathToAllOther');
+                updateFeature(nodes2feature[nodeId]);
             }
         }
 

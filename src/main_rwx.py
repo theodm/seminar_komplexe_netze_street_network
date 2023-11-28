@@ -18,10 +18,10 @@ memory = Memory("cachedir", verbose=0)
 def cached_graph_from_bbox(north, south, east, west, network_type):
     return ox.graph_from_bbox(north, south, east, west, network_type=network_type)
 
-# G = cached_graph_from_bbox(50.1943, 49.9247, 8.4011, 8.0828, network_type="drive")
+G = cached_graph_from_bbox(50.1943, 49.9247, 8.4011, 8.0828, network_type="drive")
 
 # 50.2604 49.8761 9.0088 7.9308
-G = cached_graph_from_bbox(50.2604, 49.8761, 9.0088, 7.9308, network_type="drive")
+#G = cached_graph_from_bbox(50.2604, 49.8761, 9.0088, 7.9308, network_type="drive")
 
 G = ox.speed.add_edge_speeds(G)
 G = ox.speed.add_edge_travel_times(G)
