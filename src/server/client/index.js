@@ -72,12 +72,53 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.set('node_size', this.value);
     });
 
+
+            // <input type="number" name="dual_min" id="dual_min" value="0">
+            // <input type="number" name="dual_max" id="dual_max" value="9999">
+
+    // Minimale Anzahl an Nachbarn, die ein Knoten haben muss, damit die Kante farblich hervorgehoben wird.
+    const dual_min = getCookieOrDefault('dual_min', 0);
+
+    document.getElementById('dual_min').value = dual_min;
+
+    document.getElementById('dual_min').addEventListener('change', function () {
+        Cookies.set('dual_min', this.value);
+    });
+
+    // Maximale Anzahl an Nachbarn, die ein Knoten haben muss, damit die Kante farblich hervorgehoben wird.
+    const dual_max = getCookieOrDefault('dual_max', 9999);
+
+    document.getElementById('dual_max').value = dual_max;
+
+    document.getElementById('dual_max').addEventListener('change', function () {
+        Cookies.set('dual_max', this.value);
+    });
+
+    // Welches Bild in der Bildansicht anzeigen?
+    const image_selector = getCookieOrDefault('image_selector', 'degree_histogram');
+
+    document.getElementById('image-selector').value = image_selector;
+
+    document.getElementById('image-selector').addEventListener('change', function () {
+        Cookies.set('image_selector', this.value);
+    });
+
+
     var map = new ol.Map({
         renderer: 'webgl',
         target: 'map',
         layers: [
             new ol.layer.WebGLTile({
-                source: new ol.source.OSM()
+                // apiKey ist in localhost nicht erforderlich
+                source: new ol.source.StadiaMaps({
+                    layer: 'alidade_smooth_dark',
+                    retina: true,
+                    // apiKey: 'OPTIONAL'
+                  })
+                // Wir verwenden hier StadiaMaps statt OSM, da StadiaMaps
+                // hier einen dunkleren Hintergrund hat, der Knoten und Kanten
+                // mit ihren grellen Farben sichtbarer macht.
+                    //new ol.source.OSM()
             })
         ],
         view: new ol.View({
@@ -129,8 +170,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
+
     let currentGraph = undefined;
     let currentGraphOverlayAccess = undefined;
+
+    // Das akutell angezeigte Bild aktualisieren (z.B. Knotengrad-Histogramm,)
+    function updateImage() {
+        if (!currentGraph) {
+            document.getElementById('image-container').innerHTML = 'no graph loaded'
+        }
+
+        const type = document.getElementById('image-selector').value;
+
+        document.getElementById('image-container').innerHTML = ""
+        document.getElementById('image-container').innerHTML = '<img src="/api/' + type + '?graphkey=' + currentGraph.graphkey + '" alt="Degree Histogram" />'
+    }
 
     // on graph load, request to server /graph
     // with bbox as query parameter (keys: north, east, ...) in axios returns
@@ -175,9 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 currentGraphOverlayAccess = createGraphOverlay(map, graph);
 
-                // Knoten-Histogramm anzeigen
-                document.getElementById('image-container').innerHTML = '<img src="/api/degree_histogram?graphkey=' + graph.graphkey + '" alt="Degree Histogram" />'
-
+                updateImage();
             })
             .catch(function (error) {
                 console.log(error);
@@ -239,8 +291,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const nodeData = data.node_data;
                 const edgeData = data.edge_data;
+                const additional_text_data = data.additional_text_data;
+
+                if (additional_text_data) {
+                    document.getElementById('dual_numNodes').innerText = additional_text_data.dual_numNodes ? additional_text_data.dual_numNodes : "";
+                    document.getElementById('dual_numEdges').innerText = additional_text_data.dual_numEdges ? additional_text_data.dual_numEdges : "";
+                    document.getElementById('dual_maxDegree').innerText = additional_text_data.dual_maxDegree ? additional_text_data.dual_maxDegree : "";
+                    document.getElementById('dual_avgDegree').innerText = additional_text_data.dual_avgDegree ? additional_text_data.dual_avgDegree : "";
+                    document.getElementById('dual_minDegree').innerText = additional_text_data.dual_minDegree ? additional_text_data.dual_minDegree : "";
+                    document.getElementById('dual_globalClusterCoefficientAvg').innerText = additional_text_data.dual_globalClusterCoefficientAvg ? additional_text_data.dual_globalClusterCoefficientAvg : "";
+                }
 
                 currentGraphOverlayAccess.updateData(nodeData, edgeData)
+
+                updateImage();
             })
             .catch(function (error) {
                 console.log(error);
@@ -259,6 +323,9 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.remove('redo_geometry');
         Cookies.remove('edge_highlight');
         Cookies.remove('node_size');
+        Cookies.remove('dual_min');
+        Cookies.remove('dual_max');
+        Cookies.remove('image_selector');
     });
 
     document.getElementById('node-size').addEventListener('change', function () {
@@ -277,6 +344,22 @@ document.addEventListener('DOMContentLoaded', function () {
         if (currentGraphOverlayAccess) {
             currentGraphOverlayAccess.setEdgeColorOverlay(this.value);
         }
+    });
+
+    document.getElementById('dual_min').addEventListener('change', function () {
+        if (currentGraphOverlayAccess) {
+            currentGraphOverlayAccess.setDualMin(parseInt(this.value));
+        }
+    });
+
+    document.getElementById('dual_max').addEventListener('change', function () {
+        if (currentGraphOverlayAccess) {
+            currentGraphOverlayAccess.setDualMax(parseInt(this.value));
+        }
+    });
+
+    document.getElementById('image-selector').addEventListener('change', function () {
+        updateImage();
     });
 
 

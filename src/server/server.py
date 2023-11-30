@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import io
 import base64
 
-from colormap.colormap import colormap_for_range
+from colormap.colormap import colormap_for_range, generate_distinguishable_colors
 from colormap.colormap import colormap_for_float_range_fn
 from graph.redo_geometry import redo_geometry
 from src.server.graph.nx_to_dual_graph import osmnx_to_dual_graph
@@ -33,7 +33,18 @@ graph_cache = {
 
 }
 
+dual_graph_cache = {
+
+}
+
 def server_edge_id_to_client_edge_id(graph, edge_id):
+    # normalize for Graphs without direction, so that the lower number is always first
+    if isinstance(graph, nx.Graph) or isinstance(graph, nx.MultiGraph):
+        if edge_id[0] > edge_id[1]:
+            edge_id = (edge_id[1], edge_id[0])
+        else:
+            edge_id = (edge_id[0], edge_id[1])
+
     if isinstance(graph, nx.Graph):
         return "[" + str(edge_id[0]) + "," + str(edge_id[1]) + "]"
     elif isinstance(graph, nx.MultiGraph):
@@ -106,6 +117,28 @@ def degree_histogram():
         raise Exception("Graph not found")
 
     graph = graph_cache[graphkey]
+
+    plt.clf()
+    degrees = [d for n, d in graph.degree()]
+    plt.hist(degrees, bins=range(min(degrees), max(degrees) + 1, 1))
+
+    response.content_type = 'image/png'
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    return buf.read()
+
+@get("/api/dual_degree_histogram")
+def dual_degree_histogram():
+    global dual_graph_cache
+
+    graphkey = request.query.graphkey
+
+    if graphkey not in dual_graph_cache:
+        raise Exception("Dual graph not found")
+
+    graph = dual_graph_cache[graphkey]
 
     plt.clf()
     degrees = [d for n, d in graph.degree()]
@@ -192,13 +225,14 @@ def load_additional_data():
             "node_data": None,
             "edge_data": result
         }
-    elif data_type == "dual_graph_base":
-        dg = osmnx_to_dual_graph(graph)
+    elif data_type == "dual_graph_base" or data_type == "dual_graph_base_without_label":
+        dg = osmnx_to_dual_graph(graph, use_label=(data_type == "dual_graph_base"))
+
+        dual_graph_cache[graphkey] = dg
 
         edge_data = {}
 
         for edge in graph.edges:
-
             if not "dual_node_neighbors" in graph.edges[edge]:
                 print("No dual_node_neighbors for edge " + str(edge))
 
@@ -215,7 +249,6 @@ def load_additional_data():
                     print(i)
                     dual_node_neighbors_mapped.append([server_edge_id_to_client_edge_id(graph, j) for j in i])
 
-
                 edge_data[server_edge_id_to_client_edge_id(graph, edge)] = {
                     "dual_node_degree": graph.edges[edge]["dual_node_degree"],
                     "dualNodeDegreeColor": graph.edges[edge]["dual_node_degree_color"],
@@ -224,14 +257,61 @@ def load_additional_data():
                     "dual_node_neighbors": dual_node_neighbors_mapped
                 }
 
+        num_nodes = dg.number_of_nodes()
+        num_edges = dg.number_of_edges()
+
+        degree = dg.degree()
+        max_colors_num = max(dict(degree).values())
+        avg_degree = sum(dict(degree).values()) / num_nodes
+        min_degree = min(dict(degree).values())
+        global_cluster_coefficient_avg = nx.average_clustering(dg)
+
+        additional_text_data = {
+            "dual_numNodes": num_nodes,
+            "dual_numEdges": num_edges,
+            "dual_maxDegree": max_colors_num,
+            "dual_avgDegree": avg_degree,
+            "dual_minDegree": min_degree,
+            "dual_globalClusterCoefficientAvg": global_cluster_coefficient_avg
+        }
+
         return {
             "graphkey": graphkey,
             "dataType": data_type,
             "graphType": get_graph_type_as_str(graph),
             "node_data": None,
-            "edge_data": edge_data
+            "edge_data": edge_data,
+            "additional_text_data": additional_text_data
         }
+    elif data_type == "dual_graph_coloring":
+        if graphkey not in dual_graph_cache:
+            raise Exception("Dual graph not found")
 
+        dg = dual_graph_cache[graphkey]
+
+        degree = dg.degree()
+        max_colors_num = max(dict(degree).values())
+
+        colors_in_numbers = nx.equitable_color(dg, max_colors_num + 1)
+
+        color_number_to_hex_color = generate_distinguishable_colors(max_colors_num + 1)
+
+        edgeData = {}
+        for node in dg.nodes:
+            for original_edge in dg.nodes[node]["original_edges"]:
+                edgeData[server_edge_id_to_client_edge_id(graph, original_edge)] = {
+                    "dual_node_color": color_number_to_hex_color[colors_in_numbers[node]],
+                    "dual_node_color_num": colors_in_numbers[node]
+                }
+
+
+        return {
+            "graphkey": graphkey,
+            "dataType": data_type,
+            "graphType": get_graph_type_as_str(graph),
+            "node_data": None,
+            "edge_data": edgeData
+        }
 
 
     else:

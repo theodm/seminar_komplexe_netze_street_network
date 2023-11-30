@@ -18,6 +18,7 @@ const nodeColorNoPathToAllOther = '#000000';
 
 const edgeColorNormal = '#64748b';
 const edgeColorHovered = '#f59e0b';
+const edgeColorHide = '#000000';
 
 const edgeColorHighlightSource = '#f59e0b';
 const edgeColorHighlightTarget = '#1e293b';
@@ -63,8 +64,16 @@ export function edgeColorFunction(edgeFeature) {
                     return edgeFeature.get("degreeColor");
                 case 'relativeBetweennessEdge':
                     return edgeFeature.get("rbcEdgeColor");
-                case 'dualNodeDegree':
-                    return edgeFeature.get("dualNodeDegreeColor");
+                case 'dualNodeDegree': {
+                    const edgeDegreeInRange = edgeFeature.get("dual_node_neighbors") && edgeFeature.get("dual_node_neighbors").length >= edgeFeature.get("show_min") && edgeFeature.get("dual_node_neighbors").length <= edgeFeature.get("show_max");
+                    // Nur farblich hervorheben, wenn die Anzahl der Nachbarn im festgelegten Bereich liegt
+                    return edgeDegreeInRange ? edgeFeature.get("dualNodeDegreeColor") : edgeColorHide;
+                }
+                case 'dualNodeColor': {
+                    const edgeDegreeInRange = edgeFeature.get("dual_node_neighbors") && edgeFeature.get("dual_node_neighbors").length >= edgeFeature.get("show_min") && edgeFeature.get("dual_node_neighbors").length <= edgeFeature.get("show_max");
+                    // Nur farblich hervorheben, wenn die Anzahl der Nachbarn im festgelegten Bereich liegt
+                    return edgeDegreeInRange ? edgeFeature.get("dual_node_color") : edgeColorHide;
+                }
             }
             return edgeColorNormal;
         case 'edgeIsHovered':
@@ -127,8 +136,8 @@ export function styleExpression(nodeSize = 5) {
         'fill-color': '#ffffff19',
 
         'circle-radius': nodeSize,
-        'circle-fill-color': ifNodeExpression(nodeColorExpression, "#00000000"),
-        'circle-stroke-color': ifNodeExpression(nodeColorExpression, "#00000000"),
+        'circle-fill-color': nodeSize === 0 ? "#00000000" : ifNodeExpression(nodeColorExpression, "#00000000"),
+        'circle-stroke-color': nodeSize === 0 ? "#00000000" : ifNodeExpression(nodeColorExpression, "#00000000"),
         'circle-stroke-width': 1.25,
     }
 

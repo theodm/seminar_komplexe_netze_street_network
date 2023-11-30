@@ -185,7 +185,39 @@
                     <td>global_cluster_officient_avg</td>
                     <td id="global_cluster_officient_avg"></td>
                 </tr>
+
+                <tr>
+                    <td>dual_numNodes</td>
+                    <td id="dual_numNodes"></td>
+                </tr>
+                <tr>
+                    <td>dual_numEdges</td>
+                    <td id="dual_numEdges"></td>
+                </tr>
+                <tr>
+                    <td>dual_maxDegree</td>
+                    <td id="dual_maxDegree"></td>
+                </tr>
+                <tr>
+                    <td>dual_avgDegree</td>
+                    <td id="dual_avgDegree"></td>
+                </tr>
+                <tr>
+                    <td>dual_minDegree</td>
+                    <td id="dual_minDegree"></td>
+                </tr>
+                <tr>
+                    <td>dual_globalClusterCoefficientAvg</td>
+                    <td id="dual_globalClusterCoefficientAvg"></td>
+                </tr>
             </table>
+        </div>
+        <div id="dual settings" class="settings-box"/>
+            color dual if node num <br/>
+            min
+            <input type="number" name="dual_min" id="dual_min" value="0">
+            max
+            <input type="number" name="dual_max" id="dual_max" value="9999">
         </div>
         <div id="settings-buttons" class="settings-box">
             <!-- checkbox to enable/disable fixed position of tooltip -->
@@ -242,25 +274,22 @@
                 <option value="none">none</option>
                 <option value="relativeBetweennessEdge">relative_betweenness_edge (if loaded)</option>
                 <option value="dualNodeDegree">dual_node_degree (if loaded)</option>
+                <option value="dualNodeColor">dual_node_color (if loaded)</option>
             </select>
             <label>load additional data</label>
             <select id="load-additional-data" name="load-additional-data">
                 <option value="none">none</option>
                 <option value="relative_betweenness">relative_betweenness</option>
                 <option value="relative_betweenness_edge">relative_betweenness_edge</option>
-                <option value="dual_graph_base">dual_graph_base</option>
+                <option value="dual_graph_base">dual_graph_base (label: true)</option>
+                <option value="dual_graph_base_without_label">dual_graph_base (label: false)</option>
+                <option value="dual_graph_coloring">dual_graph_coloring (after base)</option>
             </select>
+            <select id="image-selector" name="image-selector">
+                <option value="degree_histogram">degree_histogram</option>
+                <option value="dual_degree_histogram">dual_degree_histogram</option>
 
-<!--                <option value="degree_in">degree_in</option>-->
-<!--                <option value="degree_out">degree_out</option>-->
-<!--                <option value="betweenness">betweenness</option>-->
-<!--                <option value="closeness">closeness</option>-->
-<!--                <option value="eigenvector">eigenvector</option>-->
-<!--                <option value="pagerank">pagerank</option>-->
-<!--                <option value="harmonic">harmonic</option>-->
-<!--                <option value="clustering">clustering</option>-->
-<!--                <option value="eccentricity">eccentricity</option>-->
-<!--                <option value="local_cluster_officient">local_cluster_officient</option>-->
+            </select>
 
         </div>
         <div id="image-container" class="settings-box">

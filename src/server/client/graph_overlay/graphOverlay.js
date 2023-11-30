@@ -85,6 +85,9 @@ export function createGraphOverlay(
             "edgeStatus": "normal",
             "colorOverlay": document.getElementById('edge-highlight').value,
 
+            "show_min": parseInt(document.getElementById("dual_min").value),
+            "show_max": parseInt(document.getElementById("dual_max").value),
+
             props: edge
         });
 
@@ -215,6 +218,28 @@ export function createGraphOverlay(
             for (const nodeId of nodesNoPathToAllNodes) {
                 nodes2feature[nodeId].set('nodeHighlight', 'noPathToAllOther');
                 updateFeature(nodes2feature[nodeId]);
+            }
+        },
+
+        /**
+         * Setzt den Mindest-Knotengrad, bei dem die Knoten im dualen Graph
+         * erst koloriert werden.
+         */
+        setDualMin(min) {
+            for (const edgeId in edges) {
+                edges2feature[edgeId].set('show_min', min);
+                updateFeature(edges2feature[edgeId]);
+            }
+        },
+
+        /**
+         * Setzt den Maximal-Knotengrad, bei dem die Knoten im dualen Graph
+         * noch koloriert werden.
+         */
+        setDualMax(max) {
+            for (const edgeId in edges) {
+                edges2feature[edgeId].set('show_max', max);
+                updateFeature(edges2feature[edgeId]);
             }
         }
 

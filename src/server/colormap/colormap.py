@@ -1,3 +1,5 @@
+import random
+
 import matplotlib
 
 def colormap_for_range(upto: int, color_map="inferno"):
@@ -37,3 +39,27 @@ def colormap_for_float_range_fn(arr, color_map="inferno"):
         return color_in_hex
 
     return get_color_for_float
+
+import colorsys
+from math import sqrt, fmod
+def generate_distinguishable_colors(num_needed: int):
+    if num_needed < 10:
+        num = 10
+    else:
+        num = num_needed
+
+    colors = []
+
+    gr = (0.618033988749895 * 10) / num
+    for i in range(num):
+        # https://gamedev.stackexchange.com/questions/46463/how-can-i-find-an-optimum-set-of-colors-for-10-players
+        colors.append(matplotlib.colors.rgb2hex(colorsys.hsv_to_rgb(
+            fmod(i * gr, 1.0),
+            0.5,
+            sqrt(1.0 - fmod(i * gr, 0.5))
+        )))
+
+    # shuffle
+    random.shuffle(colors)
+
+    return colors
