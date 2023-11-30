@@ -72,10 +72,6 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.set('node_size', this.value);
     });
 
-
-            // <input type="number" name="dual_min" id="dual_min" value="0">
-            // <input type="number" name="dual_max" id="dual_max" value="9999">
-
     // Minimale Anzahl an Nachbarn, die ein Knoten haben muss, damit die Kante farblich hervorgehoben wird.
     const dual_min = getCookieOrDefault('dual_min', 0);
 
@@ -101,6 +97,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('image-selector').addEventListener('change', function () {
         Cookies.set('image_selector', this.value);
+    });
+
+    // Welcher Hover-Modus soll verwendet werden?
+    const hover_mode = getCookieOrDefault('hover_mode', 'node_edge');
+
+    document.getElementById('hover-mode').value = hover_mode;
+
+    document.getElementById('hover-mode').addEventListener('change', function () {
+        Cookies.set('hover_mode', this.value);
     });
 
 
