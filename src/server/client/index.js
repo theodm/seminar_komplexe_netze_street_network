@@ -331,6 +331,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Cookies.remove('dual_min');
         Cookies.remove('dual_max');
         Cookies.remove('image_selector');
+        Cookies.remove('hover_mode');
     });
 
     document.getElementById('node-size').addEventListener('change', function () {
