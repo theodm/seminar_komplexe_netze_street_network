@@ -1,7 +1,8 @@
 import {getCookieOrDefault} from './util/cookie.js';
 import {createGraphOverlay} from './graph_overlay/graphOverlay.js';
+import STADIA_API_KEY from './stadia-api-key.js';
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
 
     var center = getCookieOrDefault('last_saved_center_position', "[8.239761, 50.078218]");
     var zoom = getCookieOrDefault('last_saved_zoom_level', 12);
@@ -115,15 +116,15 @@ document.addEventListener('DOMContentLoaded', function () {
         layers: [
             new ol.layer.WebGLTile({
                 // apiKey ist in localhost nicht erforderlich
-                // source: new ol.source.StadiaMaps({
-                //     layer: 'alidade_smooth_dark',
-                //     retina: true,
-                //     // apiKey: 'OPTIONAL'
-                //   })
+                source: new ol.source.StadiaMaps({
+                    layer: 'alidade_smooth_dark',
+                    retina: true,
+                    apiKey: STADIA_API_KEY
+                  })
                 // Wir verwenden hier StadiaMaps statt OSM, da StadiaMaps
                 // hier einen dunkleren Hintergrund hat, der Knoten und Kanten
                 // mit ihren grellen Farben sichtbarer macht.
-                    source: new ol.source.OSM()
+                    // source: new ol.source.OSM(),
             })
         ],
         view: new ol.View({
