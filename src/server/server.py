@@ -246,8 +246,9 @@ def load_additional_data():
             else:
                 dual_node_neighbors_mapped = []
                 for i in graph.edges[edge]["dual_node_neighbors"]:
-                    print(i)
                     dual_node_neighbors_mapped.append([server_edge_id_to_client_edge_id(graph, j) for j in i])
+
+                print(dual_node_neighbors_mapped)
 
                 edge_data[server_edge_id_to_client_edge_id(graph, edge)] = {
                     "dual_node_degree": graph.edges[edge]["dual_node_degree"],

@@ -31,3 +31,4 @@
 /src/server/cache/
 
 __pycache__
+/tmp

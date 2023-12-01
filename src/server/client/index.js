@@ -115,15 +115,15 @@ document.addEventListener('DOMContentLoaded', function () {
         layers: [
             new ol.layer.WebGLTile({
                 // apiKey ist in localhost nicht erforderlich
-                source: new ol.source.StadiaMaps({
-                    layer: 'alidade_smooth_dark',
-                    retina: true,
-                    // apiKey: 'OPTIONAL'
-                  })
+                // source: new ol.source.StadiaMaps({
+                //     layer: 'alidade_smooth_dark',
+                //     retina: true,
+                //     // apiKey: 'OPTIONAL'
+                //   })
                 // Wir verwenden hier StadiaMaps statt OSM, da StadiaMaps
                 // hier einen dunkleren Hintergrund hat, der Knoten und Kanten
                 // mit ihren grellen Farben sichtbarer macht.
-                    //new ol.source.OSM()
+                    source: new ol.source.OSM()
             })
         ],
         view: new ol.View({

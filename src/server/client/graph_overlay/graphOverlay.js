@@ -74,7 +74,7 @@ export function createGraphOverlay(
         for (const point of geometry) {
             pointsToConnect.push(ol.proj.fromLonLat(point));
         }
-
+        
         // Eine Kante besteht sichtbar aus mehreren Linien,
         // da osmnx ZwischenKnoten filtert, aber den Straßenverlauf erhält.
         var feature = new ol.Feature({

@@ -55,6 +55,7 @@ export function nodeColorFunction(nodeFeature) {
 }
 
 export function edgeColorFunction(edgeFeature) {
+
     switch (edgeFeature.get("edgeStatus")) {
         case 'normal':
             switch (edgeFeature.get("colorOverlay")) {
@@ -64,6 +65,7 @@ export function edgeColorFunction(edgeFeature) {
                     return edgeFeature.get("degreeColor");
                 case 'relativeBetweennessEdge':
                     return edgeFeature.get("rbcEdgeColor");
+                    
                 case 'dualNodeDegree': {
                     const edgeDegreeInRange = edgeFeature.get("dual_node_neighbors") && edgeFeature.get("dual_node_neighbors").length >= edgeFeature.get("show_min") && edgeFeature.get("dual_node_neighbors").length <= edgeFeature.get("show_max");
                     // Nur farblich hervorheben, wenn die Anzahl der Nachbarn im festgelegten Bereich liegt
@@ -76,6 +78,8 @@ export function edgeColorFunction(edgeFeature) {
                 }
             }
             return edgeColorNormal;
+        case 'dualNodeIsHovered_DualNodeNeighbor':
+            return colorsForNeighbourNodes[edgeFeature.get("neighborHoveredDualNodeColor")];
         case 'edgeIsHovered':
             return edgeColorHovered;
         case 'nodeIsHovered_EdgeNeighbor':
