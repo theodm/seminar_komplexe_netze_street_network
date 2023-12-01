@@ -1,6 +1,6 @@
 import {getCookieOrDefault} from './util/cookie.js';
 import {createGraphOverlay} from './graph_overlay/graphOverlay.js';
-import STADIA_API_KEY from './stadia-api-key.js';
+
 
 document.addEventListener('DOMContentLoaded', async function () {
 
@@ -109,6 +109,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         Cookies.set('hover_mode', this.value);
     });
 
+    let STADIA_API_KEY = undefined;
+    try {
+        STADIA_API_KEY = (await import ('./stadia-api-key.js')).default;
+    } catch (e) {
+        console.log('STADIA_API_KEY not found');
+    }
 
     var map = new ol.Map({
         renderer: 'webgl',
