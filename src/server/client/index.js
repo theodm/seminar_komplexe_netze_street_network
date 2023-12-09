@@ -198,24 +198,22 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.getElementById('image-container').innerHTML = '<img src="/api/' + type + '?graphkey=' + currentGraph.graphkey + '" alt="Degree Histogram" />'
     }
 
-    // on graph load, request to server /graph
-    // with bbox as query parameter (keys: north, east, ...) in axios returns
-    // json object with object nodes and edges
-    document.getElementById('load-graph-button').addEventListener('click', function () {
-        var extent = getExtent();
+    function loadGraph(geocode_str, north, east, south, west, goto_resulting_bbox) {
+        // only bbox oder geocode_str is allowed
+        if (geocode_str && (north || east || south || west)) {
+            alert('Please only use geocode or bbox');
+            return;
+        }
 
-        // <select id="graph-type" name="graph-type">
-        //                 <option value="MultiDiGraph">default (MultiDiGraph)</option>
-        //                 <option value="Graph">simple (Graph)</option>
-        //             </select>
-        // get graphType from select element
         const graphType = document.getElementById('graph-type').value;
 
         console.log('graphType: ' + graphType)
 
         let filterDeadEnds = document.getElementById('filter-dead-ends').checked;
         let redoGeometry = document.getElementById('redo-geometry').checked;
-        const url = '/api/graph?north=' + extent[0] + '&east=' + extent[1] + '&south=' + extent[2] + '&west=' + extent[3] + '&type=' + graphType + '&filter_dead_ends=' + filterDeadEnds + '&redo_geometry=' + redoGeometry;
+
+        const queryStr = geocode_str ? 'geocode_str=' + geocode_str : 'north=' + north + '&east=' + east + '&south=' + south + '&west=' + west;
+        const url = '/api/graph?' + queryStr + '&type=' + graphType + '&filter_dead_ends=' + filterDeadEnds + '&redo_geometry=' + redoGeometry;
 
         axios.get(url)
             .then(function (response) {
@@ -241,12 +239,36 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 currentGraphOverlayAccess = createGraphOverlay(map, graph);
 
+                if (goto_resulting_bbox) {
+                    // graph.north, graph.east, graph.south, graph.west
+                    const extent = ol.proj.transformExtent([graph.west, graph.south, graph.east, graph.north], 'EPSG:4326', 'EPSG:3857');
+
+                    map.getView().fit(extent, map.getSize());
+                }
+
                 updateImage();
             })
             .catch(function (error) {
                 console.log(error);
                 alert('Error loading graph');
             });
+
+    }
+
+
+    document.getElementById('geosearch-graph-button').addEventListener('click', function () {
+        const geocode_str = document.getElementById('geosearch').value;
+        loadGraph(geocode_str, undefined, undefined, undefined, undefined, true);
+    });
+
+
+    // on graph load, request to server /graph
+    // with bbox as query parameter (keys: north, east, ...) in axios returns
+    // json object with object nodes and edges
+    document.getElementById('load-graph-button').addEventListener('click', function () {
+        const extent = getExtent();
+
+        loadGraph(undefined, extent[0], extent[1], extent[2], extent[3]);
     });
 
 

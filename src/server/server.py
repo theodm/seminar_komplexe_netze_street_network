@@ -397,10 +397,20 @@ def graph():
     east = request.query.east
     south = request.query.south
     west = request.query.west
+
+    geocode_str = request.query.geocode_str
+
     _filter_dead_ends = request.query.filter_dead_ends == "true"
     _redo_geometry = request.query.redo_geometry == "true"
 
-    oxg = ox.graph_from_bbox(north, south, east, west, network_type='drive')
+    # only geocode_str or bbox
+    if geocode_str and (north or east or south or west):
+        raise Exception(f"Invalid request, only geocode_str or bbox allowed given: {geocode_str}, {north}, {east}, {south}, {west}")
+
+    if geocode_str:
+        oxg = ox.graph_from_place(geocode_str, network_type='drive')
+    else:
+        oxg = ox.graph_from_bbox(north, south, east, west, network_type='drive')
 
     # request type can be Graph or MultiDiGraph
     graph_type = request.query.type
@@ -519,12 +529,21 @@ def graph():
     # und dann nicht neu berechnet werden muss.
     # Potzentiell unsicher und ineffizient: Diese Anwendung sollte nur lokal verwendet
     # werden, niemals über das Internet verfügbar sein. (DDOS, etc.)
-    graphkey = "graph" + north + "_" + east + "_" + south + "_" + west + "_" + graph_type + "_" + str(_filter_dead_ends) + "_" + str(_redo_geometry)
+    graphkey = "graph" + north + "_" + east + "_" + south + "_" + west + "_" + graph_type + "_" + str(_filter_dead_ends) + "_" + str(_redo_geometry) + "_" + str(geocode_str)
     graph_cache[graphkey] = oxg
 
+    # calculate bbox from graph nodes
+    max_north = max([node["lat"] for node in nodes.values()])
+    max_east = max([node["lon"] for node in nodes.values()])
+    max_south = min([node["lat"] for node in nodes.values()])
+    max_west = min([node["lon"] for node in nodes.values()])
 
     return {
         "graphkey": graphkey,
+        "north": max_north,
+        "east": max_east,
+        "south": max_south,
+        "west": max_west,
         "filter_dead_ends": bool(_filter_dead_ends),
         "redo_geometry": bool(_redo_geometry),
         "graphType": graph_type,
