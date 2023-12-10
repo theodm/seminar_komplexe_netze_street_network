@@ -19,7 +19,7 @@ unzip -o "$TempFolder/StreetContinuity.zip" -d "$TempFolder"
 mkdir -p "./src/libs/streetcontinuity"
 
 # Install into Pip
-pip install -e "$TempFolder/StreetContinuity-feature-Update_To_Newer_Libary_Versions" --user
+pip install -e "$TempFolder/StreetContinuity-feature-Update_To_Newer_Libary_Versions"
 
 # Remove Temp Folder
 #rm -rf "$TempFolder"

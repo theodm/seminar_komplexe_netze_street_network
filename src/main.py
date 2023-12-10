@@ -45,12 +45,15 @@ import graph_tool
 for e in G.edges:
     G.edges[e]["edge_label"] = str(e)
 
-#    if key == "osmid":
-                #     val = str(val)
-                # if key == "oneway" or key == "reversed" or key == "maxspeed" or key == "name" or key == "highway" or key == "lanes" or key == "ref" or key == "access" or key == "width" or key == "bridge" or key == "tunnel": 
-                #     continue
-                # if key == "geometry":
-                    # continue
+# Die folgenden Zeilen müssen in die Datei Graph.py von PyIntergraph eingefügt werden.
+# if key == "osmid":
+#     val = str(val)
+#
+# if key == "oneway" or key == "reversed" or key == "maxspeed" or key == "name" or key == "highway" or key == "lanes" or key == "ref" or key == "access" or key == "width" or key == "bridge" or key == "tunnel":
+#     continue
+#
+# if key == "geometry":
+#     continue
 
 graph_tool_graph = pyintergraph.nx2gt(G, "node_label")
 

@@ -33,3 +33,12 @@
 __pycache__
 /tmp
 stadia-api-key.js
+/src/graphtool/cache/
+/src/graphtool/data/
+/src/data/graphs/graph_infos.html
+/.idea/misc.xml
+/.idea/other.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/seminar_komplexe_netze_street_network.iml
+/.idea/vcs.xml
+/.idea/workspace.xml
