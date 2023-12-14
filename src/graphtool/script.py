@@ -17,26 +17,26 @@ from src.server.graph.nx_to_dual_graph import osmnx_to_dual_graph
 
 import matplotlib.pyplot as plt
 # Deutsche Hauptstädte
-deutsche_staedte = [
-    "Kiel, Germany",
-    "Hamburg, Germany",
-    "Bremen, Germany",
-    "Berlin, Germany",
-    "Potsdam, Germany",
-    "Schwerin, Germany",
-    "Hannover, Germany",
-    "Düsseldorf, Germany",
-    "Magdeburg, Germany",
-    "Erfurt, Germany",
-    "Mainz, Germany",
-    "Saarbrücken, Germany",
-    "Wiesbaden, Germany",
-    "Frankfurt, Germany",
-    "Koblenz, Germany",
-    "Dresden, Germany",
-    "Stuttgart, Germany",
-    "München, Germany",
-]
+# deutsche_staedte = [
+#     "Kiel, Germany",
+#     "Hamburg, Germany",
+#     "Bremen, Germany",
+#     "Berlin, Germany",
+#     "Potsdam, Germany",
+#     "Schwerin, Germany",
+#     "Hannover, Germany",
+#     "Düsseldorf, Germany",
+#     "Magdeburg, Germany",
+#     "Erfurt, Germany",
+#     "Mainz, Germany",
+#     "Saarbrücken, Germany",
+#     "Wiesbaden, Germany",
+#     "Frankfurt, Germany",
+#     "Koblenz, Germany",
+#     "Dresden, Germany",
+#     "Stuttgart, Germany",
+#     "München, Germany",
+# ]
 
 
 # deutsche_staedte = [
@@ -54,10 +54,10 @@ deutsche_staedte = [
 #
 # ]
 
-# deutsche_staedte = [
-#     "Koblenz, Germany",
-#     "Wiesbaden, Germany",
-# ]
+deutsche_staedte = [
+    "Koblenz, Germany",
+    "Wiesbaden, Germany",
+]
 
 # deutsche_staedte = [
 #     "Tegernsee, Germany",
@@ -441,8 +441,8 @@ def analyze_stadt(stadt):
     return info
 
 
-infos = Parallel(n_jobs=-1)(delayed(analyze_stadt)(stadt) for stadt in deutsche_staedte)
-#infos = [analyze_stadt(stadt) for stadt in deutsche_staedte]
+# infos = Parallel(n_jobs=-1)(delayed(analyze_stadt)(stadt) for stadt in deutsche_staedte)
+infos = [analyze_stadt(stadt) for stadt in deutsche_staedte]
 
 # Output as Table with pandas as html to file
 import pandas as pd
