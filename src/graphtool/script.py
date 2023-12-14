@@ -1,12 +1,15 @@
 import math
 import os
 import graph_tool.all as gt
+import osm2geojson
+import overpass
 
 from joblib import Parallel, delayed
 
 import osmnx as ox
 import networkx as nx
 import pyintergraph
+from osmnx import graph_from_polygon
 
 from src.server.graph.mdig_to_graph import mdig_to_graph
 
@@ -54,10 +57,15 @@ import matplotlib.pyplot as plt
 #
 # ]
 
-deutsche_staedte = [
-    "Koblenz, Germany",
-    "Wiesbaden, Germany",
-]
+# deutsche_staedte = [
+#     "Koblenz, Germany",
+#     "Wiesbaden, Germany",
+# ]
+
+from gemeindeverzeichnis.gemeindeverzeichnis import load_gemeindeverzeichnis
+from gemeindeverzeichnis.objects.Gemeinde import Gemeinde
+
+deutsche_staedte = [{k: v} for k, v in load_gemeindeverzeichnis().items() if isinstance(v, Gemeinde) and k.startswith("06")]
 
 # deutsche_staedte = [
 #     "Tegernsee, Germany",
@@ -80,6 +88,30 @@ deutsche_staedte = [
 #     "Plön, Schleswig-Holstein, Germany",
 #     "Volkach, Germany",
 # ]
+
+def geojson_from_regionalschluessel(regionalschluessel: str):
+    api = overpass.API()
+
+    response_xml = api.get(f'relation["de:regionalschluessel"="{regionalschluessel}"];out geom;', build=False)
+
+    geojson = osm2geojson.xml2geojson(response_xml)
+
+    return geojson
+
+def graph_and_geojson_from_regionalschluessel(regionalschluessel: str):
+    geojson = geojson_from_regionalschluessel(regionalschluessel)
+
+    gdf = gpd.GeoDataFrame.from_features(geojson)
+
+    polygon = gdf["geometry"].unary_union
+
+    # create graph using this polygon(s) geometry
+    G = graph_from_polygon(
+        polygon,
+        network_type="drive"
+    )
+
+    return G, geojson
 
 
 def graph_from_geocode(place):
@@ -268,6 +300,9 @@ infos = []
 
 
 def analyze_stadt(stadt):
+    if isinstance(stadt, dict):
+        stadt = list(stadt.keys())[0]
+
     print(f"Analysiere nun: {stadt}")
 
     stadt_file_name = (stadt
