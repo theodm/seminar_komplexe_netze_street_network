@@ -42,3 +42,4 @@ stadia-api-key.js
 /.idea/seminar_komplexe_netze_street_network.iml
 /.idea/vcs.xml
 /.idea/workspace.xml
+/src/graphtool/result.json
