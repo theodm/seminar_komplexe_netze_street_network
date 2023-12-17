@@ -16,14 +16,14 @@ print(df.head())
 
 import matplotlib.pyplot as plt
 
-plt.scatter(df["flaeche"], df["bevolkerung"], label=df["name"])
+plt.scatter(df["flaeche"], df["avg_path_length"], label=df["name"])
 plt.xlabel("flaeche")
-plt.ylabel("bevolkerung")
+plt.ylabel("avg_path_length")
 
 f, diagram = plt.subplots(1)
 
 for i, e in df.iterrows():
-    diagram.plot(e["flaeche"], e["bevolkerung"], 'bo')
-    plt.text(e["flaeche"] * (1 + 0.01), e["bevolkerung"] * (1 + 0.01), e["name"], fontsize=12)
+    diagram.plot(e["flaeche"], e["avg_path_length"], 'bo')
+    plt.text(e["flaeche"] * (1 + 0.01), e["avg_path_length"] * (1 + 0.01), e["name"], fontsize=12)
 
 plt.show()

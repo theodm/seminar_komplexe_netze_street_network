@@ -327,7 +327,9 @@ def analyze_stadt(stadt):
                        .replace(", ", "_")
                        .replace(" ", "_")
                        .replace("(", "_")
-                       .replace(")", "_"))
+                       .replace(")", "_")
+                       .replace("/", "_")
+                       .replace("\\", "_"))
 
     try:
         if isinstance(stadt, dict):

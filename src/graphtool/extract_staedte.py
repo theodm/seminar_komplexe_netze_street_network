@@ -17,10 +17,6 @@ result = []
 gemeindeverzeichnis = load_gemeindeverzeichnis()
 for regionalschluessel, gemeinde in gemeindeverzeichnis.items():
 
-    # nur Hessen
-    if not regionalschluessel.startswith("06"):
-        continue
-
     if not isinstance(gemeinde, Gemeinde):
         continue
     geojson = geojson_from_regionalschluessel(regionalschluessel)
