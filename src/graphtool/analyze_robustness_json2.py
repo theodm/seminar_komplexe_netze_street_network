@@ -2,21 +2,28 @@
 # json looks like:
 # [
 #     {
-#         "stadt_name": "Koblenz, Deutschland",
+#         "stadt_name": "Simmerath",
 #         "strategy": "random",
-#         "steps": 100,
+#         "normalized_steps": 0.02,
+#         "real_normalized_steps": 0.020127118644067795,
+#         "real_real_steps": 19,
 #         "results": [
 #             {
-#                 "step": 1,
-#                 "num_components": 2,
-#                 "largest_component_num_nodes": 2825,
-#                 "largest_component_num_edges": 3683,
-#                 "largest_component_avg_path_length": 32.091832585424555,
-#                 "largest_component_diameter": 90.0,
-#                 "largest_component_avg_path_length_tt": 405.11870094512295,
-#                 "largest_component_diameter_tt": 1195.7000000000003,
-#                 "num_edges": 3684,
-#                 "num_nodes": 2827
+#                 "step": 0,
+#                 "normalized_step": 0,
+#                 "num_components": 1,
+#                 "largest_component_num_nodes": 735,
+#                 "largest_component_num_edges": 944,
+#                 "largest_component_avg_path_length": 21.39575154312406,
+#                 "largest_component_diameter": 52.0,
+#                 "largest_component_avg_path_length_tt": 479.57910285640105,
+#                 "largest_component_diameter_tt": 1465.3000000000002,
+#                 "normalized_largest_component_avg_path_length": 1.0,
+#                 "normalized_largest_component_diameter": 1.0,
+#                 "normalized_largest_component_avg_path_length_tt": 1.0,
+#                 "normalized_largest_component_diameter_tt": 1.0,
+#                 "num_edges": 944,
+#                 "num_nodes": 735
 #             },
 
 # load from ./robustness.json and plot x-axis: step, y-axis: largest_component_avg_path_length_tt for each strategy
@@ -31,19 +38,26 @@ path = "./robustness.json"
 
 data = json.load(open(path, "r"))
 
+name = []
+
 for d in data:
-    print(d["strategy"])
+    if d["strategy"] != "betweenness_with_recomputation_tt":
+        continue
+
+    if d["stadt_name_gvad"] in name:
+        continue
 
     x = []
     y = []
+    name.append(d["stadt_name_gvad"])
 
     for r in d["results"]:
-        x.append(r["step"])
-        y.append(r["normalized_largest_component_avg_path_length_tt"] if "normalized_largest_component_avg_path_length_tt" in r else 1)
+        x.append(r["normalized_step"])
+        y.append(r["normalized_largest_component_avg_path_length_tt"])
 
     plt.plot(x, y)
 
-plt.legend([d["strategy"] for d in data])
+plt.legend(name)
 plt.show()
 
 # plot to file
