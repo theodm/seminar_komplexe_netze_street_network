@@ -1,6 +1,7 @@
 from random import random
 
 import matplotlib
+import numpy as np
 #https://stackoverflow.com/questions/75769820/how-to-prevent-matplotlib-to-be-shown-in-popup-window
 matplotlib.use('Agg')
 
@@ -10,6 +11,8 @@ import graph_tool.all as gt
 
 import osm2geojson
 import overpass
+
+from collections import Counter
 
 from joblib import Parallel, delayed
 
@@ -31,13 +34,33 @@ import matplotlib.pyplot as plt
 def graph_from_geocode(place):
     return ox.graph_from_place(place, network_type="drive")
 
+def get_all_nodes_from_largest_component(_G, component_labels, most_frequent_component_label):
+    res = []
 
-def calculate_graph_path_metrics(_G, weight=None):
-    shortest_distance_matrix = gt.shortest_distance(_G, weights=_G.edge_properties[weight] if weight else None)
+    for v in _G.vertices():
+        if component_labels[v] == most_frequent_component_label:
+            res.append(v)
+
+    return res
+
+# Gibt alle Knoten zurück, die nicht in der größten Komponente sind.
+def get_all_nodes_from_non_largest_component(_G, component_labels, most_frequent_component_label):
+    res = []
+
+    for v in _G.vertices():
+        if component_labels[v] != most_frequent_component_label:
+            res.append(v)
+
+    return res
 
 
+def calculate_graph_path_metrics(_G, ignore_nodes=[],  weight=None):
+    __G = _G.copy()
+    __G.remove_vertex(ignore_nodes)
 
-    avg_path_length = sum([sum(i) for i in shortest_distance_matrix]) / (_G.num_vertices() ** 2 - _G.num_vertices())
+    shortest_distance_matrix = gt.shortest_distance(__G, weights=__G.edge_properties[weight] if weight else None)
+            
+    avg_path_length = sum([sum(i) for i in shortest_distance_matrix]) / (__G.num_vertices() ** 2 - __G.num_vertices())
     diameter = max([max(i) for i in shortest_distance_matrix])
 
     return avg_path_length, diameter
@@ -124,79 +147,191 @@ def relative_betweenness_centrality(G, _G,  weight=None):
 
     nx.set_edge_attributes(
         G, edge_betweenness_centrality, "edge_betweenness_centrality")
+    
+    return node_betweenness_centrality, edge_betweenness_centrality, vb, eb
 
 
-stadt_name = "Wiesbaden, Hessen, Deutschland"
+def analyze_stadt(stadt_name, strategy, steps):
+    print(f"Analysiere nun: {stadt_name}, {strategy}, {steps}")
 
-print(f"Analysiere nun: {stadt_name}")
+    stadt_file_name = (stadt_name
+                    .replace(", ", "_")
+                    .replace(" ", "_")
+                    .replace("(", "_")
+                    .replace(")", "_")
+                    .replace("/", "_")
+                    .replace("\\", "_"))
 
-stadt_file_name = (stadt_name
-                   .replace(", ", "_")
-                   .replace(" ", "_")
-                   .replace("(", "_")
-                   .replace(")", "_")
-                   .replace("/", "_")
-                   .replace("\\", "_"))
+    MDG = graph_from_geocode(stadt_name)
 
-MDG = graph_from_geocode(stadt_name)
+    # add travel_time attribute to edges
+    ox.add_edge_speeds(MDG)
+    ox.add_edge_travel_times(MDG)
 
-# add travel_time attribute to edges
-ox.add_edge_speeds(MDG)
-ox.add_edge_travel_times(MDG)
+    G = mdig_to_graph(MDG)
 
-G = mdig_to_graph(MDG)
+    # remove self loops
+    G.remove_edges_from(nx.selfloop_edges(G))
 
-# remove self loops
-G.remove_edges_from(nx.selfloop_edges(G))
+    _G = convert_graph_to_graphtool(G)
 
-_G = convert_graph_to_graphtool(G)
+    if strategy == "random":
+        pass
+    elif strategy == "betweenness" or strategy == "betweenness_with_recomputation":
+        nc, ec, ncr, ecr = relative_betweenness_centrality(G, _G)
+    elif strategy == "betweenness_tt" or strategy == "betweenness_with_recomputation_tt":
+        nc, ec, ncr, ecr = relative_betweenness_centrality(G, _G, weight="travel_time")
 
-i = 0
-while True:
-    # select random edge
-    edges = _G.get_edges()
+    start_avg_path_length, start_diameter = calculate_graph_path_metrics(_G, ignore_nodes=[])
+    start_avg_path_length_tt, start_diameter_tt = calculate_graph_path_metrics(_G, ignore_nodes=[], weight="travel_time")
 
-    random_edge = edges[int(random() * len(edges))]
+    step_results = []
 
-    print(f"random_edge: {random_edge}")
+    step_results.append({
+        "step": 0,
 
-    _G.remove_edge(list(random_edge))
+        "num_components": 1,
 
-    avg_path_length, diameter = calculate_graph_path_metrics(_G)
+        "largest_component_num_nodes": int(_G.num_vertices()),
+        "largest_component_num_edges": int(_G.num_edges()),
 
-    print(f"avg_path_length: {avg_path_length}")
-    print(f"diameter: {diameter}")
-    print(f"num_edges: {_G.num_edges()}")
+        "largest_component_avg_path_length": float(start_avg_path_length),
+        "largest_component_diameter": float(start_diameter),
 
-    # get number of connected components
-    component_labels, hist = gt.label_components(_G)
+        "largest_component_avg_path_length_tt": float(start_avg_path_length_tt),
+        "largest_component_diameter_tt": float(start_diameter_tt),
 
-    print(f"num_connected_components: {hist}")
+        "normalized_largest_component_avg_path_length": float(start_avg_path_length / start_avg_path_length),
+        "normalized_largest_component_diameter": float(start_diameter / start_diameter),
 
-    # relative_betweenness_centrality(G, _G)
-    # save_edge_plot_with_attribute(G, "edge_betweenness_centrality", filepath=f"robustness/{stadt_file_name}_rb_{i}.png")
+        "normalized_largest_component_avg_path_length_tt": float(start_avg_path_length_tt / start_avg_path_length_tt),
+        "normalized_largest_component_diameter_tt": float(start_diameter_tt / start_diameter_tt),
 
-    i += 1
+        "num_edges": int(_G.num_edges()),
+        "num_nodes": int(_G.num_vertices()),
+    })
 
-#
-# avg_path_length, diameter  = calculate_graph_path_metrics(_G)
-# avg_path_length_tt, diameter_tt  = calculate_graph_path_metrics(_G, weight="travel_time")
-# avg_path_length_lgt, diameter_lgt  = calculate_graph_path_metrics(_G, weight="length")
-#
-# # Dualer Graph
-# DG = osmnx_to_dual_graph(G)
-#
-# # nodes of dual graph
-# num_nodes_dual = DG.number_of_nodes()
-# # edges of dual graph
-# num_edges_dual = DG.number_of_edges()
-#
-# # degrees of dual graph
-# degrees_dual = DG.degree()
-# degrees_values_dual = dict(degrees_dual).values()
-# # avg degree of dual graph
-# avg_degree_dual = sum(degrees_values_dual) / num_nodes_dual
-# # min degree of dual graph
-# min_degree_dual = min(degrees_values_dual)
-# # max degree of dual graph
-# max_degree_dual = max(degrees_values_dual)
+    i = 0
+
+    edges_from_largest_component = _G.get_edges()
+
+    while True:
+        edges = edges_from_largest_component
+
+        if strategy == "betweenness_with_recomputation" or strategy == "betweenness_with_recomputation_tt":
+            nc, ec, ncr, ecr = relative_betweenness_centrality(G, _G, weight="travel_time" if strategy == "betweenness_with_recomputation_tt" else None)
+
+        edge_to_remove = None
+        if strategy == "random":
+            # Auswahl: Welche Kante soll entfernt werden?
+            # hier: zufällige Kante
+            edge_to_remove = edges[int(random() * len(edges))]
+        elif strategy == "betweenness" or strategy == "betweenness_tt" or strategy == "betweenness_with_recomputation" or strategy == "betweenness_with_recomputation_tt":
+            _max = 0
+            
+            for e in edges:
+                if ecr[e] > _max:
+                    _max = ecr[e]
+                    edge_to_remove = e
+            
+        #print(f"Remove edge: {edge_to_remove}")
+
+        _G.remove_edge(list(edge_to_remove))
+        i += 1
+
+        # Auswertung: Wie hat sich das Netzwerk entwickelt?
+
+        # https://graph-tool.skewed.de/static/doc/autosummary/graph_tool.topology.label_components.html
+        component_labels, hist = gt.label_components(_G)
+
+        # Welchen Wert gibt es in largest_component am häufigsten. Hier: Was ist die größte Komponente
+        # und welche Knoten gehören zu ihr?
+        # https://stackoverflow.com/questions/6252280/find-the-most-frequent-number-in-a-numpy-vector
+        most_frequent_component_label = Counter(list(component_labels)).most_common(1)[0][0]
+
+        # Gibt alle Kanten zurück, die in der größten Komponente sind.
+        def get_edges_from_largest_component():
+            edges = _G.get_edges()  
+
+            edges_from_largest_component = []
+
+            for e in edges:
+                # get nodes of edge
+                v1 = e[0]
+                v2 = e[1]
+
+                if component_labels[v1] != most_frequent_component_label or component_labels[v2] != most_frequent_component_label:
+                    continue
+
+                edges_from_largest_component.append(e)
+
+            return edges_from_largest_component
+
+        edges_from_largest_component = get_edges_from_largest_component()
+        
+        avg_path_length, diameter = calculate_graph_path_metrics(_G, ignore_nodes=get_all_nodes_from_non_largest_component(_G, component_labels, most_frequent_component_label))
+        avg_path_length_tt, diameter_tt = calculate_graph_path_metrics(_G, ignore_nodes=get_all_nodes_from_non_largest_component(_G, component_labels, most_frequent_component_label), weight="travel_time")
+
+        step_results.append({
+            "step": i,
+
+            "num_components": len(hist),
+
+            "largest_component_num_nodes": int(hist[most_frequent_component_label]),
+            "largest_component_num_edges": len(edges_from_largest_component),
+
+            "largest_component_avg_path_length": float(avg_path_length),
+            "largest_component_diameter": float(diameter),
+
+            "largest_component_avg_path_length_tt": float(avg_path_length_tt),
+            "largest_component_diameter_tt": float(diameter_tt),
+
+            "normalized_largest_component_avg_path_length": float(avg_path_length / start_avg_path_length),
+            "normalized_largest_component_diameter": float(diameter / start_diameter),
+
+            "normalized_largest_component_avg_path_length_tt": float(avg_path_length_tt / start_avg_path_length_tt),
+            "normalized_largest_component_diameter_tt": float(diameter_tt / start_diameter_tt),
+
+            "num_edges": int(_G.num_edges()),
+            "num_nodes": int(_G.num_vertices()),
+        })
+
+        if i >= steps:
+            break
+
+    return {
+        "stadt_name": stadt_name,
+        "strategy": strategy,
+        "steps": steps,
+        "results": step_results
+    } 
+
+staedte = [
+    #"Frauenstein, Hessen, Deutschland",
+    "Koblenz, Deutschland",
+]
+
+to_analyze = []
+
+for stadt in staedte:
+    for strategy in [
+        "random",
+        "betweenness",
+        "betweenness_with_recomputation",
+        "betweenness_tt",
+        "betweenness_with_recomputation_tt"
+    ]:
+        to_analyze.append({
+            "stadt": stadt,
+            "strategy": strategy,
+            "steps": 100
+        })
+
+print(to_analyze)
+
+results = Parallel(n_jobs=-1)(delayed(analyze_stadt)(d["stadt"], d["strategy"], d["steps"]) for d in to_analyze)    
+#results = [analyze_stadt(d["stadt"], d["strategy"], d["steps"]) for d in to_analyze]
+
+import json
+
+json.dump(results, open("robustness.json", "w"), indent=4)

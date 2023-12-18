@@ -43,3 +43,7 @@ stadia-api-key.js
 /.idea/vcs.xml
 /.idea/workspace.xml
 /src/graphtool/result.json
+robustness.json
+robustness.png
+cache/*
+robustness/*
