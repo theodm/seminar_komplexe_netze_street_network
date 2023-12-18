@@ -384,14 +384,10 @@ staedte = json.load(open("result.json", "r"))
 staedte.sort(key=lambda x: x["flaeche"], reverse=True)
 
 # only retain 100 largest cities
-staedte = staedte[:500]
+staedte = staedte[:100]
 
 # reverse
 staedte = staedte[::-1]
-
-# only first 10
-
-staedte = staedte[:10]
 
 to_analyze = []
 
@@ -406,14 +402,14 @@ for stadt in staedte:
         to_analyze.append({
             "stadt": stadt,
             "strategy": strategy,
-            "normalized_steps": 0.02,
+            "normalized_steps": 0.015,
             "avoid_multiple_components": True
         })
 
         to_analyze.append({
             "stadt": stadt,
             "strategy": strategy,
-            "normalized_steps": 0.02,
+            "normalized_steps": 0.015,
             "avoid_multiple_components": False
         })
 
