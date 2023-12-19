@@ -113,6 +113,9 @@ def geojson_from_regionalschluessel(regionalschluessel: str):
 def graph_from_geojson(geojson):
     gdf = gpd.GeoDataFrame.from_features(geojson)
 
+    # filter out all Polygon and MultiPolygon
+    gdf = gdf[gdf["geometry"].type.isin(["Polygon", "MultiPolygon"])]
+    
     polygon = gdf["geometry"].unary_union
 
     # create graph using this polygon(s) geometry
