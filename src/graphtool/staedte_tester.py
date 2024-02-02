@@ -18,7 +18,7 @@ from src.server.graph.mdig_to_graph import mdig_to_graph
 import geopandas as gpd
 from shapely.geometry import Polygon
 
-from src.server.graph.nx_to_dual_graph import osmnx_to_dual_graph
+from src.server.graph.nx_to_dual_graph import osmnx_to_dual_graph2
 
 import matplotlib.pyplot as plt
 

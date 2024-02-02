@@ -41,10 +41,29 @@ data = json.load(open(path, "r"))
 name = []
 
 for d in data:
-    if d["strategy"] != "betweenness_with_recomputation_tt":
+    if not d:
         continue
 
-    if d["stadt_name_gvad"] in name:
+
+    if "strategy" not in d:
+        continue
+
+    if "results" not in d:
+        continue
+
+    # if not d["stadt_name_gvad"] or not "Hagen" in d["stadt_name_gvad"]:
+    #     continue
+
+    if "bevolkerung" in d and d["bevolkerung"] < 600000:
+        continue
+
+    if "strategy" in d and d["strategy"] != "betweenness_with_recomputation_tt":
+        continue
+
+    if "stadt_name_gvad" in d and d["stadt_name_gvad"] in name:
+        continue
+
+    if "avoid_multiple_components" in d and not d["avoid_multiple_components"]:
         continue
 
     x = []
@@ -52,7 +71,7 @@ for d in data:
     name.append(d["stadt_name_gvad"])
 
     for r in d["results"]:
-        x.append(r["normalized_step"])
+        x.append(r["step"])
         y.append(r["normalized_largest_component_avg_path_length_tt"])
 
     plt.plot(x, y)

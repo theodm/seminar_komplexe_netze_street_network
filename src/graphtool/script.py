@@ -21,7 +21,7 @@ from src.server.graph.mdig_to_graph import mdig_to_graph
 import geopandas as gpd
 from shapely.geometry import Polygon
 
-from src.server.graph.nx_to_dual_graph import osmnx_to_dual_graph
+from src.server.graph.nx_to_dual_graph import osmnx_to_dual_graph2
 
 import matplotlib.pyplot as plt
 
@@ -308,7 +308,7 @@ def relative_betweenness_centrality(G, _G,  weight=None):
 
 
 
-OUTPUT_DIRECTORY = "./data/graphs"
+OUTPUT_DIRECTORY = "./data/graphs222"
 
 # Create output directory if not exists
 if not os.path.exists(OUTPUT_DIRECTORY):
@@ -341,7 +341,26 @@ def analyze_stadt(stadt):
             MDG = graph_from_geocode(stadt)
 
         # add travel_time attribute to edges
-        ox.add_edge_speeds(MDG)
+        ox.add_edge_speeds(MDG, hwy_speeds={
+            "motorway": 130,
+            "trunk": 100,
+            "primary": 100,
+            "secondary": 100,
+            "tertiary": 100,
+            "unclassified": 50,
+            "residential": 30,
+
+            "motorway_link": 100,
+            "trunk_link": 100,
+            "primary_link": 100,
+            "secondary_link": 100,
+            "tertiary_link": 100,
+
+            "living_street": 10,
+            "service": 10,
+            "pedestrian": 10,
+            "track": 10,
+        })
         ox.add_edge_travel_times(MDG)
 
         G = mdig_to_graph(MDG)
@@ -377,12 +396,12 @@ def analyze_stadt(stadt):
 
         _G = convert_graph_to_graphtool(G)
 
-        avg_path_length, diameter  = calculate_graph_path_metrics(_G)
-        avg_path_length_tt, diameter_tt  = calculate_graph_path_metrics(_G, weight="travel_time")
-        avg_path_length_lgt, diameter_lgt  = calculate_graph_path_metrics(_G, weight="length")
+        avg_path_length, diameter = calculate_graph_path_metrics(_G)
+        avg_path_length_tt, diameter_tt = calculate_graph_path_metrics(_G, weight="travel_time")
+        avg_path_length_lgt, diameter_lgt = calculate_graph_path_metrics(_G, weight="length")
 
         # Dualer Graph
-        DG = osmnx_to_dual_graph(G)
+        DG = osmnx_to_dual_graph2(G)
 
         # nodes of dual graph
         num_nodes_dual = DG.number_of_nodes()

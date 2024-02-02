@@ -14,7 +14,7 @@ import base64
 from colormap.colormap import colormap_for_range, generate_distinguishable_colors
 from colormap.colormap import colormap_for_float_range_fn
 from graph.redo_geometry import redo_geometry
-from src.server.graph.nx_to_dual_graph import osmnx_to_dual_graph
+from src.server.graph.nx_to_dual_graph import osmnx_to_dual_graph, osmnx_to_dual_graph2
 
 
 # Mit diesen Anweisungen werden alle Dateien im Ordner ./client
@@ -226,7 +226,7 @@ def load_additional_data():
             "edge_data": result
         }
     elif data_type == "dual_graph_base" or data_type == "dual_graph_base_without_label":
-        dg = osmnx_to_dual_graph(graph, use_label=(data_type == "dual_graph_base"))
+        dg = osmnx_to_dual_graph2(graph, use_label=(data_type == "dual_graph_base"))
 
         dual_graph_cache[graphkey] = dg
 
@@ -420,6 +420,11 @@ def graph():
 
     if graph_type == "Graph":
         oxg = mdig_to_graph(oxg)
+
+        # todo configurable?
+        # removing self-loops from the resulting graph
+        oxg.remove_edges_from(nx.selfloop_edges(oxg))
+
     elif graph_type == "DiGraph":
         oxg = ox.utils_graph.get_digraph(oxg)
     elif graph_type == "MultiGraph":

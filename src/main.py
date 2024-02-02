@@ -23,7 +23,26 @@ def cached_graph_from_bbox(north, south, east, west, network_type):
 # 50.2604 49.8761 9.0088 7.9308
 G = cached_graph_from_bbox(50.2604, 49.8761, 9.0088, 7.9308, network_type="drive")
 
-G = ox.speed.add_edge_speeds(G)
+G = ox.speed.add_edge_speeds(G, hwy_speeds={
+            "motorway": 130,
+            "trunk": 100,
+            "primary": 100,
+            "secondary": 100,
+            "tertiary": 100,
+            "unclassified": 50,
+            "residential": 30,
+
+            "motorway_link": 100,
+            "trunk_link": 100,
+            "primary_link": 100,
+            "secondary_link": 100,
+            "tertiary_link": 100,
+
+            "living_street": 10,
+            "service": 10,
+            "pedestrian": 10,
+            "track": 10,
+        })
 G = ox.speed.add_edge_travel_times(G)
 print("0")
 
