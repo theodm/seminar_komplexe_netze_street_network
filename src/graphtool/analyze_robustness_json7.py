@@ -38,43 +38,27 @@ path = "./robustness.json"
 
 data = json.load(open(path, "r"))
 
-name = []
+data = [d for d in data if d and d["stadt_name_gvad"] == "Frankfurt am Main, Stadt"]
+# filter elements with avoid_multiple_components
+data = [d for d in data if not d["avoid_multiple_components"]]
 
-for d in data:
-    if not d:
-        continue
+strategies = [
+    "random",
+    "betweenness_with_recomputation",
+    "betweenness_with_recomputation_tt",
+    "betweenness",
+    "betweenness_tt"
+]
 
+# plot step to largest_component_avg_path_length
 
-    if "strategy" not in d:
-        continue
+for e in data:
+    steps = [r["step"] for r in e["results"]]
+    largest_component_avg_path_length = [r["largest_component_avg_path_length"] for r in e["results"]]
 
-    if "results" not in d:
-        continue
+    plt.plot(steps, largest_component_avg_path_length, label=e["strategy"])
 
-    # if not d["stadt_name_gvad"] or not "Hagen" in d["stadt_name_gvad"]:
-    #     continue
-
-    if "bevolkerung" in d and d["bevolkerung"] < 600000:
-        continue
-
-    if "strategy" in d and d["strategy"] != "betweenness_with_recomputation_tt":
-        continue
-
-    if "stadt_name_gvad" in d and d["stadt_name_gvad"] in name:
-        continue
-
-    if "avoid_multiple_components" in d and d["avoid_multiple_components"]:
-        continue
-
-    x = []
-    y = []
-    name.append(d["stadt_name_gvad"])
-
-    for r in d["results"]:
-        x.append(r["step"])
-        y.append(r["normalized_largest_component_avg_path_length_tt"])
-
-    plt.plot(x, y)
-
-plt.legend(name)
+plt.xlabel("step")
+plt.ylabel("largest_component_avg_path_length")
+plt.legend()
 plt.show()

@@ -98,11 +98,14 @@ from gemeindeverzeichnis.objects.Gemeinde import Gemeinde
 # from result.json
 import json
 
-#deutsche_staedte = json.load(open("result.json", "r"))
+deutsche_staedte = json.load(open("result.json", "r"))
 
-deutsche_staedte = [
-    "Berlin, Germany",
-]
+# filter only 100 largest cities by bevolkerung
+deutsche_staedte = sorted(deutsche_staedte, key=lambda x: x["bevolkerung"], reverse=True)[:100]
+
+# filter 10 lowest bevolkerung
+deutsche_staedte = sorted(deutsche_staedte, key=lambda x: x["bevolkerung"], reverse=False)[:10]
+
 
 def geojson_from_regionalschluessel(regionalschluessel: str):
     api = overpass.API()
@@ -317,7 +320,7 @@ def relative_betweenness_centrality(G, _G,  weight=None):
 
 
 
-OUTPUT_DIRECTORY = "./data/graphs_Berlin"
+OUTPUT_DIRECTORY = "./data/graphs_any"
 
 # Create output directory if not exists
 if not os.path.exists(OUTPUT_DIRECTORY):
@@ -326,7 +329,7 @@ if not os.path.exists(OUTPUT_DIRECTORY):
 infos = []
 
 
-def analyze_stadt(stadt):
+def analyze_stadt2(stadt):
     matplotlib.use('Agg')
     if isinstance(stadt, dict):
         stadt_name = stadt["stadt_name_gvad"]
@@ -377,47 +380,7 @@ def analyze_stadt(stadt):
         # remove self loops
         G.remove_edges_from(nx.selfloop_edges(G))
 
-        # Bounding Box of graph
-        bbox = get_graph_bbox(G)
-        # Area of bounding box
-        bbox_area = get_bbox_area(bbox)
-
-        # Get simple data from graph
-        # number of nodes
-        num_nodes = G.number_of_nodes()
-        # number of edges
-        num_edges = G.number_of_edges()
-
-        degrees = G.degree()
-        degrees_values = dict(degrees).values()
-        # avg degree
-        avg_degree = sum(degrees_values) / num_nodes
-        # min degree
-        min_degree = min(degrees_values)
-        # max degree
-        max_degree = max(degrees_values)
-
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_degree_histogram.png"):
-            save_degree_histogram_plot(G, filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_degree_histogram.png")
-
-        # avg clustering coefficient
-        global_cluster_coefficient_avg = nx.average_clustering(G)
-
-        _G = convert_graph_to_graphtool(G)
-
-        avg_path_length, diameter = calculate_graph_path_metrics(_G)
-        avg_path_length_tt, diameter_tt = calculate_graph_path_metrics(_G, weight="travel_time")
-        avg_path_length_lgt, diameter_lgt = calculate_graph_path_metrics(_G, weight="length")
-
-        # Dualer Graph
         DG = osmnx_to_dual_graph2(G)
-        #
-        # DG_copy = DG.copy()
-        #
-        # for n in DG_copy.nodes:
-        #     DG_copy.nodes[n]["original_edges"] = str(DG_copy.nodes[n]["original_edges"])
-        # nx.write_gexf(DG_copy, f"{OUTPUT_DIRECTORY}/{stadt_file_name}_dual.gexf")
-
         # nodes of dual graph
         num_nodes_dual = DG.number_of_nodes()
         # edges of dual graph
@@ -425,88 +388,22 @@ def analyze_stadt(stadt):
 
         # degrees of dual graph
         degrees_dual = DG.degree()
-        degrees_values_dual = dict(degrees_dual).values()
-        # avg degree of dual graph
-        avg_degree_dual = sum(degrees_values_dual) / num_nodes_dual
-        # min degree of dual graph
-        min_degree_dual = min(degrees_values_dual)
-        # max degree of dual graph
-        max_degree_dual = max(degrees_values_dual)
 
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_degree_histogram_dual.png"):
-            save_degree_histogram_plot(DG, filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_degree_histogram_dual.png")
+        # degree distribution
+        x = []
+        y = []
 
-        # avg clustering coefficient of dual graph
-        global_cluster_coefficient_avg_dual = nx.average_clustering(DG)
+        for i in range(0, max(dict(degrees_dual).values()) + 1):
+            x.append(i)
+            y.append(list(dict(degrees_dual).values()).count(i))
 
-        _DG = convert_graph_to_graphtool(DG)
-
-        avg_path_length_dual, diameter_dual = calculate_graph_path_metrics(_DG)
-
-        # betweenness centrality in primal graph
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_be.png"):
-            relative_betweenness_centrality(G, _G)
-            save_edge_plot_with_attribute(G, "edge_betweenness_centrality", filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_be.png")
-
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_be_tt.png"):
-            relative_betweenness_centrality(G, _G, weight="travel_time")
-            save_edge_plot_with_attribute(G, "edge_betweenness_centrality", filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_be_tt.png")
-
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_be_lgt.png"):
-            relative_betweenness_centrality(G, _G, weight="length")
-            save_edge_plot_with_attribute(G, "edge_betweenness_centrality", filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_be_lgt.png")
-
-        # betweenness centrality in dual graph
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_dbe.png"):
-            relative_betweenness_centrality(DG, _DG)
-            map_dual_node_attribute_to_primal_edges_attribute(G, DG, "node_betweenness_centrality")
-            save_edge_plot_with_attribute(G, "node_betweenness_centrality", filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_dbe.png")
-
-        # closeness centrality in primal graph
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_cn.png"):
-            closeness_centrality(G, _G)
-            save_node_plot_with_attribute(G, "node_closeness_centrality", filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_cn.png")
-
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_cn_tt.png"):
-            closeness_centrality(G, _G, weight="travel_time")
-            save_node_plot_with_attribute(G, "node_closeness_centrality", filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_cn_tt.png")
-
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_cn_lgt.png"):
-            closeness_centrality(G, _G, weight="length")
-            save_node_plot_with_attribute(G, "node_closeness_centrality", filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_cn_lgt.png")
-
-        # closeness centrality in dual graph
-        if not os.path.exists(f"{OUTPUT_DIRECTORY}/{stadt_file_name}_dcn.png"):
-            closeness_centrality(DG, _DG)
-            map_dual_node_attribute_to_primal_edges_attribute(G, DG, "node_closeness_centrality")
-            save_edge_plot_with_attribute(G, "node_closeness_centrality", filepath=f"{OUTPUT_DIRECTORY}/{stadt_file_name}_dcn.png")
 
 
         # Save information
         info = {
             "name": stadt_name,
-            "bounding_box": bbox,
-            "bounding_box_area": bbox_area,
-            "num_nodes": num_nodes,
-            "num_edges": num_edges,
-            "avg_degree": avg_degree,
-            "min_degree": min_degree,
-            "max_degree": max_degree,
-            "avg_cluster_coeff": global_cluster_coefficient_avg,
-            "avg_path_length": avg_path_length,
-            "diameter": diameter,
-            "avg_path_length_tt": avg_path_length_tt,
-            "diameter_tt": diameter_tt,
-            "avg_path_length_lgt": avg_path_length_lgt,
-            "diameter_lgt": diameter_lgt,
-            "num_nodes_dual": num_nodes_dual,
-            "num_edges_dual": num_edges_dual,
-            "avg_degree_dual": avg_degree_dual,
-            "min_degree_dual": min_degree_dual,
-            "max_degree_dual": max_degree_dual,
-            "avg_cluster_coeff_dual": global_cluster_coefficient_avg_dual,
-            "avg_path_length_dual": avg_path_length_dual,
-            "diameter_dual": diameter_dual,
+            "x": x,
+            "y": y
         }
 
     except Exception as e:
@@ -526,7 +423,7 @@ def analyze_stadt(stadt):
 
 
 #infos = Parallel(n_jobs=-1)(delayed(analyze_stadt)(stadt) for stadt in deutsche_staedte)
-infos = [analyze_stadt(stadt) for stadt in deutsche_staedte]
+infos = [analyze_stadt2(stadt) for stadt in deutsche_staedte]
 
 
 # Output as Table with pandas as html to file
@@ -539,7 +436,7 @@ df = pd.DataFrame(infos)
 df.to_csv(f"{OUTPUT_DIRECTORY}/graph_infos.csv")
 
 # sort by bounding box area
-df = df.sort_values(by=["bounding_box_area"], ascending=True)
+#df = df.sort_values(by=["bounding_box_area"], ascending=True)
 
 # highlight min and max in each column
 def highlight_min(s):

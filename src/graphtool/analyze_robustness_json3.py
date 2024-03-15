@@ -38,43 +38,46 @@ path = "./robustness.json"
 
 data = json.load(open(path, "r"))
 
-name = []
+
+num = 0
+num2 = 0
 
 for d in data:
-    if not d:
-        continue
-
-
     if "strategy" not in d:
+        print("error: " + d["stadt_name_gvad"] + " has no strategy")
         continue
 
     if "results" not in d:
+        print("error: " + d["stadt_name_gvad"] + " has no results")
         continue
 
-    # if not d["stadt_name_gvad"] or not "Hagen" in d["stadt_name_gvad"]:
-    #     continue
-
-    if "bevolkerung" in d and d["bevolkerung"] < 600000:
+    if "strategy" in d and d["strategy"] != "random":
         continue
 
-    if "strategy" in d and d["strategy"] != "betweenness_with_recomputation_tt":
+    if d["avoid_multiple_components"]:
         continue
 
-    if "stadt_name_gvad" in d and d["stadt_name_gvad"] in name:
-        continue
+    num = num + 1
 
-    if "avoid_multiple_components" in d and d["avoid_multiple_components"]:
-        continue
-
-    x = []
-    y = []
-    name.append(d["stadt_name_gvad"])
-
+    # find first step where num_components > 1
+    first_step = 0
+    diff = 0
     for r in d["results"]:
-        x.append(r["step"])
-        y.append(r["normalized_largest_component_avg_path_length_tt"])
+        if r["num_components"] > 1:
+            first_step = r["step"]
+            # calc difference of nodes of lagest component before this step and after
 
-    plt.plot(x, y)
+            diff = d["results"][first_step]["largest_component_num_nodes"] - d["results"][first_step - 1]["largest_component_num_nodes"]
 
-plt.legend(name)
-plt.show()
+            break
+
+    if first_step == 0:
+        continue
+
+    if diff >= -1:
+        continue
+
+    print(d["stadt_name_gvad"], first_step, diff)
+    num2 = num2 + 1
+
+print(f"num: {num}, num2: {num2}")

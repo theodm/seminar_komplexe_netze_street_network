@@ -76,6 +76,9 @@ export function edgeColorFunction(edgeFeature) {
                     // Nur farblich hervorheben, wenn die Anzahl der Nachbarn im festgelegten Bereich liegt
                     return edgeDegreeInRange ? edgeFeature.get("dual_node_color") : edgeColorHide;
                 }
+                case 'lccColor': {
+                    return edgeFeature.get("lccColor");
+                }
             }
             return edgeColorNormal;
         case 'dualNodeIsHovered_DualNodeNeighbor':

@@ -154,6 +154,7 @@ def osmnx_to_dual_graph2(oxg: nx.Graph, use_label: bool = True):
         did: int
         edges: list
         names: list
+        refs: list
 
     dual_nodes = []
     edges_to_dual_node = {}
@@ -207,7 +208,7 @@ def osmnx_to_dual_graph2(oxg: nx.Graph, use_label: bool = True):
             continue
 
         edges = gather_edges(edge)
-        dual_node = DualNode(did=len(dual_nodes), edges=edges, names=[])
+        dual_node = DualNode(did=len(dual_nodes), edges=edges, names=[oxg.edges[e]["name"] if "name" in oxg.edges[e] else "" for e in edges], refs=[oxg.edges[e]["ref"] if "ref" in oxg.edges[e] else "" for e in edges])
         dual_nodes.append(dual_node)
 
         for edge in edges:
@@ -240,7 +241,7 @@ def osmnx_to_dual_graph2(oxg: nx.Graph, use_label: bool = True):
     nxgraph = nx.Graph()
 
     for dual_node in dual_nodes:
-        nxgraph.add_node(dual_node.did, original_edges=dual_node.edges, names="")
+        nxgraph.add_node(dual_node.did, original_edges=dual_node.edges, names=str(dual_node.names), refs=str(dual_node.refs))
 
     for dual_edge in dual_edges:
         nxgraph.add_edge(dual_edge[0], dual_edge[1])

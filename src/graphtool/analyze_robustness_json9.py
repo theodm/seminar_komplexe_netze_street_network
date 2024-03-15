@@ -40,10 +40,61 @@ data = json.load(open(path, "r"))
 
 name = []
 
+normalized_step_max = 99999
+
+only_stadt = ["Hannover, Landeshauptstadt", "Dortmund, Stadt", "Essen, Stadt", "Stuttgart, Stadt"]
 for d in data:
     if not d:
         continue
 
+    # if d["stadt_name_gvad"] not in only_stadt:
+    #     continue
+
+
+    if "strategy" not in d:
+        continue
+
+    if "results" not in d:
+        continue
+
+    if not d["stadt_name_gvad"] or not "Hagen" in d["stadt_name_gvad"]:
+        continue
+
+    if "bevolkerung" in d and d["bevolkerung"] <= 300000:
+        continue
+
+    if "strategy" in d and d["strategy"] != "betweenness_with_recomputation_tt":
+        continue
+
+    if "stadt_name_gvad" in d and d["stadt_name_gvad"] in name:
+        continue
+
+    if "avoid_multiple_components" in d and d["avoid_multiple_components"]:
+        continue
+
+    # find first step where num_components > 1
+    first_step = 0
+    normalized_step = 0
+    rr = None
+    for i in range(len(d["results"])):
+        r = d["results"][i]
+        if r["num_components"] > 1:
+            first_step = r["step"]
+            normalized_step = r["normalized_step"]
+            rr = r
+            break
+
+    if normalized_step < normalized_step_max:
+        normalized_step_max = normalized_step
+        print(d["stadt_name_gvad"], normalized_step)
+
+
+for d in data:
+    if not d:
+        continue
+    #
+    # if d["stadt_name_gvad"] not in only_stadt:
+    #     continue
 
     if "strategy" not in d:
         continue
@@ -54,7 +105,9 @@ for d in data:
     # if not d["stadt_name_gvad"] or not "Hagen" in d["stadt_name_gvad"]:
     #     continue
 
-    if "bevolkerung" in d and d["bevolkerung"] < 600000:
+
+
+    if "bevolkerung" in d and d["bevolkerung"] <= 600000:
         continue
 
     if "strategy" in d and d["strategy"] != "betweenness_with_recomputation_tt":
@@ -71,10 +124,13 @@ for d in data:
     name.append(d["stadt_name_gvad"])
 
     for r in d["results"]:
-        x.append(r["step"])
+        x.append(r["normalized_step"])
         y.append(r["normalized_largest_component_avg_path_length_tt"])
 
     plt.plot(x, y)
+
+# show only x axis from 0 to normalized_step_max * 100
+#plt.xlim(0, normalized_step_max * 100)
 
 plt.legend(name)
 plt.show()

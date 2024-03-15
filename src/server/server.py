@@ -311,6 +311,49 @@ def load_additional_data():
             "node_data": None,
             "edge_data": edgeData
         }
+    elif data_type == "dual_graph_clustering":
+        if graphkey not in dual_graph_cache:
+            raise Exception("Dual graph not found")
+
+        dg = dual_graph_cache[graphkey]
+
+        edge_data = {}
+
+        # Alle Knoten bekommen ein Attribut "local_cluster_coefficient" mit dem lokalen Cluster-Koeffizienten
+        # (Anzahl der Kanten zwischen den Nachbarn eines Knotens / Anzahl der möglichen Kanten zwischen den Nachbarn eines Knotens)
+
+        max_local_cluster_coefficient = 0
+        for node in dg.nodes:
+            clustering = nx.clustering(dg, node)
+
+            dg.nodes[node]["local_cluster_coefficient"] = clustering
+
+            if clustering > max_local_cluster_coefficient:
+                max_local_cluster_coefficient = clustering
+
+        color_creator = colormap_for_float_range_fn([0.0, max_local_cluster_coefficient], "inferno")
+
+        def logify(x):
+            # log(x+1)
+            return math.log(2.5 * x + 1)
+
+        for node in dg.nodes:
+            for original_edge in dg.nodes[node]["original_edges"]:
+                coefficient_ = dg.nodes[node]["local_cluster_coefficient"]
+                edge_data[server_edge_id_to_client_edge_id(graph, original_edge)] = {
+                    "local_cluster_coefficient": coefficient_,
+                    "lccColor": color_creator(logify(coefficient_))
+                }
+
+        return {
+            "graphkey": graphkey,
+            "dataType": data_type,
+            "graphType": get_graph_type_as_str(graph),
+            "node_data": None,
+            "edge_data": edge_data
+        }
+
+
 
 
     else:

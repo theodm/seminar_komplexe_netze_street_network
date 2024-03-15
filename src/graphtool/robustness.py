@@ -284,7 +284,7 @@ def analyze_stadt(stadt, strategy, normalized_steps, avoid_multiple_components=F
                 if strategy == "betweenness_with_recomputation" or strategy == "betweenness_with_recomputation_tt":
                     nc, ec, ncr, ecr = relative_betweenness_centrality(G, _G, weight="travel_time" if strategy == "betweenness_with_recomputation_tt" else None)
 
-                    #save_edge_plot_with_attribute(G, "edge_betweenness_centrality", f"./robustness/{stadt_file_name}_{strategy}_{normalized_steps}_{avoid_multiple_components}_{i}.png")
+                    save_edge_plot_with_attribute(G, "edge_betweenness_centrality", f"./robustness/{stadt_file_name}_{strategy}_{normalized_steps}_{avoid_multiple_components}_{i}.png")
 
                 edge_to_remove = None
                 if strategy == "random":
@@ -381,6 +381,7 @@ def analyze_stadt(stadt, strategy, normalized_steps, avoid_multiple_components=F
                 print(e)
                 break
     except Exception as e:
+        raise e
         print(e)
         return {
             "stadt_name": stadt_name,
@@ -404,26 +405,34 @@ def analyze_stadt(stadt, strategy, normalized_steps, avoid_multiple_components=F
         **{k: v for k, v in stadt.items() if k != "geojson"}
     } 
 
-staedte = [
-    "Hagen, Nordrhein-Westfalen, Deutschland",
-    #"Wiesbaden, Hessen, Deutschland",
-]
+# staedte = [
+#     "Hagen, Nordrhein-Westfalen, Deutschland",
+#     #"Wiesbaden, Hessen, Deutschland",
+# ]
 
 import json
-#
-# staedte = json.load(open("result.json", "r"))
+
+staedte = json.load(open("result.json", "r"))
 #
 # # sort by area descending
-# staedte.sort(key=lambda x: x["bevolkerung"], reverse=True)
+staedte.sort(key=lambda x: x["bevolkerung"], reverse=True)
 #
-# # only retain 100 largest cities
-# staedte = staedte[:100]
-#
-# # remove biggest two cities
-# staedte = staedte[4:]
-#
-# # reverse
-# staedte = staedte[::-1]
+# only retain 100 largest cities
+staedte = staedte[:100]
+
+# remove biggest two cities
+staedte = staedte[2:]
+
+# reverse
+staedte = staedte[::-1]
+
+# filter staedte bevolkerung > 400000
+staedte = [s for s in staedte if s["bevolkerung"] > 400000]
+
+# filter only Braunschweig, Stadt
+# Bielefeld, Stadt
+# Dortmund, Stadt
+
 
 
 #print([s["stadt_name_gvad"] for s in staedte])
@@ -432,23 +441,19 @@ to_analyze = []
 
 for stadt in staedte:
     for strategy in [
-        "random",
-        "betweenness",
-        "betweenness_with_recomputation",
-        "betweenness_tt",
         "betweenness_with_recomputation_tt"
     ]:
-        to_analyze.append({
-            "stadt": stadt,
-            "strategy": strategy,
-            "normalized_steps": 0.006,
-            "avoid_multiple_components": True
-        })
+        # to_analyze.append({
+        #     "stadt": stadt,
+        #     "strategy": strategy,
+        #     "normalized_steps": 0.006,
+        #     "avoid_multiple_components": True
+        # })
 
         to_analyze.append({
             "stadt": stadt,
             "strategy": strategy,
-            "normalized_steps": 0.006,
+            "normalized_steps": 0.0004,
             "avoid_multiple_components": False
         })
 
@@ -458,9 +463,9 @@ def cached_analyze_stadt(stadt, strategy, normalized_steps, avoid_multiple_compo
     result = analyze_stadt(stadt, strategy, normalized_steps, avoid_multiple_components)
     return result
 
-#results = Parallel(n_jobs=-1)(delayed(cached_analyze_stadt)(d["stadt"], d["strategy"], d["normalized_steps"], d["avoid_multiple_components"]) for d in to_analyze)
-results = [analyze_stadt(d["stadt"], d["strategy"], d["normalized_steps"], d["avoid_multiple_components"]) for d in to_analyze]
+results = Parallel(n_jobs=-1)(delayed(cached_analyze_stadt)(d["stadt"], d["strategy"], d["normalized_steps"], d["avoid_multiple_components"]) for d in to_analyze)
+#results = [analyze_stadt(d["stadt"], d["strategy"], d["normalized_steps"], d["avoid_multiple_components"]) for d in to_analyze]
 
 import json
 
-json.dump(results, open("robustness_test.json", "w"), indent=4)
+json.dump(results, open("robustness.json", "w"), indent=4)

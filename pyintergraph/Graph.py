@@ -257,6 +257,9 @@ class InterGraph:
                 if key == "original_edges":
                     continue
 
+                if key == "est_width":
+                    continue
+
                 # Single Type assertion
                 node_property_type_assertion[key].add(type(val))
                 if len(node_property_type_assertion[key]) > 1:

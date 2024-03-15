@@ -40,24 +40,31 @@ data = json.load(open(path, "r"))
 
 name = []
 
+num = 0
+num2 = 0
+
+after_arr = {
+    "random": [],
+    "betweenness_with_recomputation": [],
+    "betweenness_with_recomputation_tt": [],
+    "betweenness": [],
+    "betweenness_tt": [],
+}
+after_tt_arr = {
+    "random": [],
+    "betweenness_with_recomputation": [],
+    "betweenness_with_recomputation_tt": [],
+    "betweenness": [],
+    "betweenness_tt": [],
+}
+
 for d in data:
     if not d:
         continue
 
-
-    if "strategy" not in d:
-        continue
+    num = num + 1
 
     if "results" not in d:
-        continue
-
-    # if not d["stadt_name_gvad"] or not "Hagen" in d["stadt_name_gvad"]:
-    #     continue
-
-    if "bevolkerung" in d and d["bevolkerung"] < 600000:
-        continue
-
-    if "strategy" in d and d["strategy"] != "betweenness_with_recomputation_tt":
         continue
 
     if "stadt_name_gvad" in d and d["stadt_name_gvad"] in name:
@@ -66,15 +73,16 @@ for d in data:
     if "avoid_multiple_components" in d and d["avoid_multiple_components"]:
         continue
 
-    x = []
-    y = []
-    name.append(d["stadt_name_gvad"])
+    after = d["results"][-1]["normalized_largest_component_avg_path_length"]
+    after_tt = d["results"][-1]["normalized_largest_component_avg_path_length_tt"]
 
-    for r in d["results"]:
-        x.append(r["step"])
-        y.append(r["normalized_largest_component_avg_path_length_tt"])
+    after_arr[d["strategy"]].append(after)
+    after_tt_arr[d["strategy"]].append(after_tt)
 
-    plt.plot(x, y)
+for k, v in after_arr.items():
+    print(k, sum(v) / len(v))
 
-plt.legend(name)
-plt.show()
+for k, v in after_tt_arr.items():
+    print(k, sum(v) / len(v))
+
+
