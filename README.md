@@ -20,6 +20,8 @@ In diesem Repository befinden sich:
 Continuity Negotiation) bzw. ICN (von Porta et al. [1] bzw. Massuci et al [2]) basierend auf der Bibliothek StreetContinuity [3]
  - Diverse Experimente mit der Overpass-API / OSMnx und sonstigen verwendeten Biblitoheken
  - Web-Tool zur graphentheoretischen Analyse der Straßennetze
+ - Präsentation der Ergebnisse (als Basis der mündlichen Leistung) [01962_Seminararbeit_Straßennetze_final.pdf](01962_Seminararbeit_Stra%C3%9Fennetze_final.pdf)
+ - Schrichtliche Ausarbeitung der Ergebnisse [01962_Seminararbeit_Straßennetze_final_doc.pdf](01962_Seminararbeit_Stra%C3%9Fennetze_final_doc.pdf)
 
 
 [1] S. Porta, P. Crucitti, und V. Latora, „The Network Analysis of Urban Streets: A Primal Approach“,
@@ -71,3 +73,27 @@ Das Web-Tool erfordert die Bibliotheken graph_tool und pyintergraph. Graph_tool 
 
 #### Anzeige von Detailinformationen zu einer Kante
 ![img5.png](docs/img5.png)
+
+## Finale Präsentation (mündliche Leistung)
+
+![01962_Präsentation_Straßennetze_final-01.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-01.png)
+![01962_Präsentation_Straßennetze_final-02.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-02.png)
+![01962_Präsentation_Straßennetze_final-03.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-03.png)
+![01962_Präsentation_Straßennetze_final-04.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-04.png)
+![01962_Präsentation_Straßennetze_final-05.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-05.png)
+![01962_Präsentation_Straßennetze_final-06.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-06.png)
+![01962_Präsentation_Straßennetze_final-07.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-07.png)
+![01962_Präsentation_Straßennetze_final-08.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-08.png)
+![01962_Präsentation_Straßennetze_final-09.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-09.png)
+![01962_Präsentation_Straßennetze_final-10.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-10.png)
+![01962_Präsentation_Straßennetze_final-11.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-11.png)
+![01962_Präsentation_Straßennetze_final-12.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-12.png)
+![01962_Präsentation_Straßennetze_final-13.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-13.png)
+![01962_Präsentation_Straßennetze_final-14.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-14.png)
+![01962_Präsentation_Straßennetze_final-15.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-15.png)
+![01962_Präsentation_Straßennetze_final-16.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-16.png)
+![01962_Präsentation_Straßennetze_final-17.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-17.png)
+![01962_Präsentation_Straßennetze_final-18.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-18.png)
+![01962_Präsentation_Straßennetze_final-19.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-19.png)
+![01962_Präsentation_Straßennetze_final-20.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-20.png)
+![01962_Präsentation_Straßennetze_final-21.png](docs%2F01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final-21.png)
