@@ -20,7 +20,7 @@ In diesem Repository befinden sich:
 Continuity Negotiation) bzw. ICN (von Porta et al. [1] bzw. Massuci et al [2]) basierend auf der Bibliothek StreetContinuity [3]
  - Diverse Experimente mit der Overpass-API / OSMnx und sonstigen verwendeten Biblitoheken
  - Web-Tool zur graphentheoretischen Analyse der Straßennetze
- - Präsentation der Ergebnisse (als Basis der mündlichen Leistung) [01962_Seminararbeit_Straßennetze_final.pdf](01962_Seminararbeit_Stra%C3%9Fennetze_final.pdf)
+ - Präsentation der Ergebnisse (als Basis der mündlichen Leistung) [01962_Präsentation_Straßennetze_final.pdf](01962_Pr%C3%A4sentation_Stra%C3%9Fennetze_final.pdf)
  - Schrichtliche Ausarbeitung der Ergebnisse [01962_Seminararbeit_Straßennetze_final_doc.pdf](01962_Seminararbeit_Stra%C3%9Fennetze_final_doc.pdf)
 
 
